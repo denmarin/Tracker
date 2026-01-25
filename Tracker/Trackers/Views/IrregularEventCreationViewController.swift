@@ -37,27 +37,31 @@ final class IrregularEventCreationViewController: UIViewController {
 
     private let categoryRow = SettingsRowButton()
 
-    private let cancelButton: UIButton = {
-        let b = UIButton(type: .system)
-        var config = UIButton.Configuration.bordered()
-        config.title = "Отменить"
-        config.baseForegroundColor = .systemRed
-        b.configuration = config
-        b.translatesAutoresizingMaskIntoConstraints = false
-        return b
-    }()
+	private let cancelButton: UIButton = {
+		let b = UIButton(type: .system)
+		var config = UIButton.Configuration.bordered()
+		config.title = "Отменить"
+		config.baseForegroundColor = .ypRed
+		config.background.strokeColor = .ypRed
+		config.background.strokeWidth = 1
+		config.cornerStyle = .large
+		b.configuration = config
+		b.translatesAutoresizingMaskIntoConstraints = false
+		return b
+	}()
 
-    private let createButton: UIButton = {
-        let b = UIButton(type: .system)
-        var config = UIButton.Configuration.filled()
-        config.title = "Создать"
-        config.baseBackgroundColor = .systemGray3
-        config.baseForegroundColor = .white
-        b.configuration = config
-        b.isEnabled = false
-        b.translatesAutoresizingMaskIntoConstraints = false
-        return b
-    }()
+	private let createButton: UIButton = {
+		let b = UIButton(type: .system)
+		var config = UIButton.Configuration.filled()
+		config.title = "Создать"
+		config.background.cornerRadius = 16
+		config.baseBackgroundColor = .ypBlack
+		config.baseForegroundColor = .white
+		b.configuration = config
+		b.isEnabled = false
+		b.translatesAutoresizingMaskIntoConstraints = false
+		return b
+	}()
     
     override func loadView() {
         self.view = DismissKeyboardView(frame: .zero)
@@ -65,7 +69,7 @@ final class IrregularEventCreationViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ypBackground
         navigationItem.title = "Новое нерегулярное событие"
         setup()
         updateCreateButtonState()
@@ -117,12 +121,28 @@ final class IrregularEventCreationViewController: UIViewController {
 
         bottomBar.addArrangedSubview(cancelButton)
         bottomBar.addArrangedSubview(createButton)
+		cancelButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
+		createButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
 
         NSLayoutConstraint.activate([
             bottomBar.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             bottomBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             bottomBar.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -16)
         ])
+		
+		createButton.configurationUpdateHandler = { button in
+			guard var config = button.configuration else { return }
+
+			if button.isEnabled {
+				config.baseBackgroundColor = .ypBlack
+				config.baseForegroundColor = .white
+			} else {
+				config.baseBackgroundColor = .ypGray
+				config.baseForegroundColor = UIColor.white.withAlphaComponent(0.6)
+			}
+
+			button.configuration = config
+		}
 
         cancelButton.addAction(UIAction { [weak self] _ in
             self?.navigationController?.popViewController(animated: true)
@@ -134,6 +154,7 @@ final class IrregularEventCreationViewController: UIViewController {
             guard !name.isEmpty else { return }
             let tracker = Tracker(title: name, emoji: "🙂", color: .systemBlue, schedule: [])
             self.onCreate?(tracker, "Без категории")
+			self.navigationController?.dismiss(animated: true)
         }, for: .touchUpInside)
 
         categoryRow.addAction(UIAction { [weak self] _ in
@@ -145,15 +166,11 @@ final class IrregularEventCreationViewController: UIViewController {
         }, for: .editingChanged)
     }
 
-    private func updateCreateButtonState() {
-        let hasText = !(titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        createButton.isEnabled = hasText
-        if hasText {
-            createButton.configuration?.baseBackgroundColor = .ypBlack
-        } else {
-            createButton.configuration?.baseBackgroundColor = .systemGray3
-        }
-    }
+	private func updateCreateButtonState() {
+		let hasText = !(titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+		createButton.isEnabled = hasText
+		createButton.setNeedsUpdateConfiguration()
+	}
 
     private func presentNotImplementedAlert() {
         let alert = UIAlertController(title: nil, message: "Экран будет реализован позже", preferredStyle: .alert)

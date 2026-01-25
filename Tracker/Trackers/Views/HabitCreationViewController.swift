@@ -40,27 +40,30 @@ final class HabitCreationViewController: UIViewController {
 
     private let cancelButton: UIButton = {
         let b = UIButton(type: .system)
-        var config = UIButton.Configuration.borderedTinted()
+        var config = UIButton.Configuration.bordered()
         config.title = "Отменить"
         config.baseForegroundColor = .ypRed
+		config.background.strokeColor = .ypRed
+		config.background.strokeWidth = 1
         config.cornerStyle = .large
         b.configuration = config
         b.translatesAutoresizingMaskIntoConstraints = false
         return b
     }()
 
-    private let createButton: UIButton = {
-        let b = UIButton(type: .system)
-        var config = UIButton.Configuration.filled()
-        config.title = "Создать"
-        config.baseBackgroundColor = .systemGray3
-        config.baseForegroundColor = .white
-        config.cornerStyle = .large
-        b.configuration = config
-        b.isEnabled = false
-        b.translatesAutoresizingMaskIntoConstraints = false
-        return b
-    }()
+	private let createButton: UIButton = {
+		let b = UIButton(type: .system)
+		var config = UIButton.Configuration.filled()
+		config.title = "Создать"
+		config.background.cornerRadius = 16
+		config.baseBackgroundColor = .ypBlack
+		config.baseForegroundColor = .white
+
+		b.configuration = config
+		b.isEnabled = false
+		b.translatesAutoresizingMaskIntoConstraints = false
+		return b
+	}()
 
     private var selectedSchedule: Set<Weekday> = []
 
@@ -135,6 +138,20 @@ final class HabitCreationViewController: UIViewController {
             bottomBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             bottomBar.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -16)
         ])
+		
+		createButton.configurationUpdateHandler = { button in
+			guard var config = button.configuration else { return }
+
+			if button.isEnabled {
+				config.baseBackgroundColor = .ypBlack
+				config.baseForegroundColor = .white
+			} else {
+				config.baseBackgroundColor = .ypGray
+				config.baseForegroundColor = UIColor.white.withAlphaComponent(0.6)
+			}
+
+			button.configuration = config
+		}
 
         cancelButton.addAction(UIAction { [weak self] _ in
             self?.navigationController?.popViewController(animated: true)
@@ -147,6 +164,7 @@ final class HabitCreationViewController: UIViewController {
             guard !self.selectedSchedule.isEmpty else { return }
             let tracker = Tracker(title: name, emoji: "🙂", color: .systemBlue, schedule: selectedSchedule)
             self.onCreate?(tracker, "Без категории")
+			self.navigationController?.dismiss(animated: true)
         }, for: .touchUpInside)
 
         categoryRow.addAction(UIAction { [weak self] _ in
@@ -170,13 +188,12 @@ final class HabitCreationViewController: UIViewController {
         }, for: .editingChanged)
     }
 
-    private func updateCreateButtonState() {
-        let hasText = !(titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        let hasSchedule = !selectedSchedule.isEmpty
-        let enabled = hasText && hasSchedule
-        createButton.isEnabled = enabled
-        createButton.configuration?.baseBackgroundColor = enabled ? .ypBlack : .systemGray3
-    }
+	private func updateCreateButtonState() {
+		let hasText = !(titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+		let hasSchedule = !selectedSchedule.isEmpty
+		createButton.isEnabled = hasText && hasSchedule
+		createButton.setNeedsUpdateConfiguration()
+	}
 
     private func scheduleSummary(from selection: Set<Weekday>) -> String {
         if selection.count == Weekday.allCases.count { return "Каждый день" }

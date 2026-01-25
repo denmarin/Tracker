@@ -7,8 +7,6 @@
 
 import Foundation
 
-/// День недели для расписания трекера.
-/// Используется в `Tracker.schedule` как множество уникальных дней.
 enum Weekday: Int, CaseIterable, Hashable {
     case monday = 1
     case tuesday
@@ -18,8 +16,6 @@ enum Weekday: Int, CaseIterable, Hashable {
     case saturday
     case sunday
 
-    /// Создать день недели по дате с учётом календаря.
-    /// В `Calendar`, Sunday = 1 ... Saturday = 7.
     static func from(_ date: Date, calendar: Calendar = .current) -> Weekday {
         let weekdayIndex = calendar.component(.weekday, from: date)
         switch weekdayIndex {
@@ -33,10 +29,8 @@ enum Weekday: Int, CaseIterable, Hashable {
         }
     }
 
-    /// Порядок дней недели для отображения (Пн..Вс)
     static let ordered: [Weekday] = [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
 
-    /// Полное имя дня недели на русском
     var fullName: String {
         switch self {
         case .monday: return "Понедельник"
@@ -49,7 +43,6 @@ enum Weekday: Int, CaseIterable, Hashable {
         }
     }
 
-    /// Короткое имя дня недели на русском
     var shortName: String {
         switch self {
         case .monday: return "Пн"

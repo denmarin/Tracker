@@ -43,20 +43,18 @@ final class TrackerTypeSelectionViewController: UIViewController {
         habitButton.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             let vc = HabitCreationViewController()
-            vc.onCreate = { [weak self] tracker, category in
-                self?.onCreate?(tracker, category)
-                self?.navigationController?.dismiss(animated: true)
-            }
+			vc.onCreate = { [weak self] tracker, category in
+				self?.onCreate?(tracker, category)
+			}
             self.navigationController?.pushViewController(vc, animated: true)
         }, for: .touchUpInside)
 
         irregularButton.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             let vc = IrregularEventCreationViewController()
-            vc.onCreate = { [weak self] tracker, category in
-                self?.onCreate?(tracker, category)
-                self?.navigationController?.dismiss(animated: true)
-            }
+			vc.onCreate = { [weak self] tracker, category in
+				self?.onCreate?(tracker, category)
+			}
             self.navigationController?.pushViewController(vc, animated: true)
         }, for: .touchUpInside)
     }

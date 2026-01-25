@@ -13,16 +13,26 @@ final class TrackersViewController: UIViewController {
     private var filteredCategories: [TrackerCategory] = []
 	var completedTrackers: [TrackerRecord] = []
 	
-    private let createTrackerButton: UIButton = {
-        let button = UIButton(type: .system)
-        var config = UIButton.Configuration.plain()
-        config.image = UIImage(systemName: "plus")
-        config.baseForegroundColor = .ypBlack
-        config.contentInsets = .zero
-        button.configuration = config
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
+	private let createTrackerButton: UIButton = {
+		let button = UIButton(type: .system)
+
+		var config = UIButton.Configuration.plain()
+		config.baseForegroundColor = .ypBlack
+		config.contentInsets = .zero
+		config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
+			pointSize: 19,
+			weight: .bold
+		)
+		config.image = UIImage(systemName: "plus")
+
+		button.configuration = config
+		
+		button.contentHorizontalAlignment = .center
+		button.contentVerticalAlignment = .center
+
+		button.translatesAutoresizingMaskIntoConstraints = false
+		return button
+	}()
     
     private let datePicker: UIDatePicker = {
         let picker = UIDatePicker()
@@ -219,10 +229,6 @@ final class TrackersViewController: UIViewController {
         let weekday = Weekday.from(selectedDate)
         let filtered: [TrackerCategory] = categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
-                // Regular trackers (with schedule) are shown on their scheduled weekdays.
-                // Irregular trackers (empty schedule) are shown:
-                //  - on the creation day always
-                //  - on subsequent days only if not completed on the creation day
                 if !tracker.schedule.isEmpty {
                     let matchesSchedule = tracker.schedule.contains(weekday)
                     return matchesSchedule
@@ -330,19 +336,27 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
         let isCompleted = isTrackerCompleted(tracker, on: normalizedSelectedDate())
         let count = completedCount(for: tracker)
         cell.configure(with: tracker, isCompleted: isCompleted, completedCount: count)
-        cell.onToggle = { [weak self] in
-            guard let self else { return }
-            if self.isFutureSelectedDate() {
-                self.showFutureDateAlert()
-                return
-            }
-            if self.isTrackerCompleted(tracker, on: self.normalizedSelectedDate()) {
-                self.unmarkTrackerCompleted(for: tracker, on: self.normalizedSelectedDate())
-            } else {
-                self.markTrackerCompleted(for: tracker, on: self.normalizedSelectedDate())
-            }
-            collectionView.reloadItems(at: [indexPath])
-        }
+		cell.onToggle = { [weak self, weak cell] in
+			guard
+				let self,
+				let cell,
+				let currentIndexPath = collectionView.indexPath(for: cell)
+			else { return }
+
+			if self.isFutureSelectedDate() {
+				self.showFutureDateAlert()
+				return
+			}
+
+			let date = self.normalizedSelectedDate()
+			if self.isTrackerCompleted(tracker, on: date) {
+				self.unmarkTrackerCompleted(for: tracker, on: date)
+			} else {
+				self.markTrackerCompleted(for: tracker, on: date)
+			}
+
+			collectionView.reloadItems(at: [currentIndexPath])
+		}
         return cell
     }
 
