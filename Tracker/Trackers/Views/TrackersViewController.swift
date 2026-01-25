@@ -192,12 +192,18 @@ final class TrackersViewController: UIViewController {
 	}
 	
 	private func didTapCreateTracker() {
-		print("didTapAdd")
+        let typeVC = TrackerTypeSelectionViewController()
+        typeVC.onCreate = { [weak self] tracker, categoryTitle in
+            self?.addTracker(tracker, toCategoryWithTitle: categoryTitle)
+        }
+        let nav = UINavigationController(rootViewController: typeVC)
+        present(nav, animated: true)
 	}
 	
 	private func didChangeDate() {
         let dateString = df.string(from: datePicker.date)
         print("didChangeDate: \(dateString)")
+        view.endEditing(true)
         applyFiltersAndReload()
 	}
     
@@ -213,8 +219,28 @@ final class TrackersViewController: UIViewController {
         let weekday = Weekday.from(selectedDate)
         let filtered: [TrackerCategory] = categories.compactMap { category in
             let filteredTrackers = category.trackers.filter { tracker in
-                let matchesSchedule = tracker.schedule.isEmpty || tracker.schedule.contains(weekday)
-                return matchesSchedule
+                // Regular trackers (with schedule) are shown on their scheduled weekdays.
+                // Irregular trackers (empty schedule) are shown:
+                //  - on the creation day always
+                //  - on subsequent days only if not completed on the creation day
+                if !tracker.schedule.isEmpty {
+                    let matchesSchedule = tracker.schedule.contains(weekday)
+                    return matchesSchedule
+                } else {
+                    // Irregular case
+                    let selectedDay = selectedDate
+                    let createdDay = Calendar.current.startOfDay(for: tracker.createdAt)
+                    if selectedDay == createdDay {
+                        return true
+                    }
+                    if selectedDay > createdDay {
+                        // Show only if not completed on creation day
+                        let wasCompletedOnCreationDay = completedTrackers.contains(TrackerRecord(trackerId: tracker.id, date: createdDay))
+                        return !wasCompletedOnCreationDay
+                    }
+                    // Before creation date — never show
+                    return false
+                }
             }
             return filteredTrackers.isEmpty ? nil : TrackerCategory(title: category.title, trackers: filteredTrackers)
         }

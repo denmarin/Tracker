@@ -14,13 +14,15 @@ struct Tracker: Identifiable, Hashable {
     let emoji: String
     let color: UIColor
     let schedule: Set<Weekday>
+    let createdAt: Date
 
-    init(id: UUID = UUID(), title: String, emoji: String, color: UIColor, schedule: Set<Weekday> = []) {
+    init(id: UUID = UUID(), title: String, emoji: String, color: UIColor, schedule: Set<Weekday> = [], createdAt: Date = Date()) {
         self.id = id
         self.title = title
         self.emoji = emoji
         self.color = color
         self.schedule = schedule
+        self.createdAt = createdAt
     }
 
     static func == (lhs: Tracker, rhs: Tracker) -> Bool {
