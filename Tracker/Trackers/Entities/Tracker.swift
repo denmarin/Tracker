@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Foundation
 
 struct Tracker: Identifiable, Hashable {
     let id: UUID

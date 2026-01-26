@@ -75,10 +75,6 @@ final class TrackerCell: UICollectionViewCell {
         }, for: .touchUpInside)
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     func configure(with tracker: Tracker, isCompleted: Bool, completedCount: Int) {
         containerView.backgroundColor = tracker.color.withAlphaComponent(0.3)
         emojiLabel.text = tracker.emoji
@@ -101,4 +97,9 @@ final class TrackerCell: UICollectionViewCell {
         if (2...4).contains(mod10) && !(12...14).contains(mod100) { return "дня" }
         return "дней"
     }
+	
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		nil
+	}
 }

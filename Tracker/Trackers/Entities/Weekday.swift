@@ -31,27 +31,27 @@ enum Weekday: Int, CaseIterable, Hashable {
 
     static let ordered: [Weekday] = [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
 
-    var fullName: String {
-        switch self {
-        case .monday: return "Понедельник"
-        case .tuesday: return "Вторник"
-        case .wednesday: return "Среда"
-        case .thursday: return "Четверг"
-        case .friday: return "Пятница"
-        case .saturday: return "Суббота"
-        case .sunday: return "Воскресенье"
-        }
-    }
+	var fullName: String {
+		switch self {
+		case .monday: "Понедельник"
+		case .tuesday: "Вторник"
+		case .wednesday: "Среда"
+		case .thursday: "Четверг"
+		case .friday: "Пятница"
+		case .saturday: "Суббота"
+		case .sunday: "Воскресенье"
+		}
+	}
 
     var shortName: String {
         switch self {
-        case .monday: return "Пн"
-        case .tuesday: return "Вт"
-        case .wednesday: return "Ср"
-        case .thursday: return "Чт"
-        case .friday: return "Пт"
-        case .saturday: return "Сб"
-        case .sunday: return "Вс"
+        case .monday: "Пн"
+        case .tuesday: "Вт"
+        case .wednesday: "Ср"
+        case .thursday: "Чт"
+        case .friday: "Пт"
+        case .saturday: "Сб"
+        case .sunday: "Вс"
         }
     }
 }

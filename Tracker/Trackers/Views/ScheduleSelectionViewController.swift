@@ -63,16 +63,22 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
         super.viewDidLoad()
         view.backgroundColor = .ypBackground
         navigationItem.title = "Расписание"
+        setupViews()
+        setupConstraints()
+        setupActions()
+    }
 
+    private func setupViews() {
         tableView.dataSource = self
         tableView.delegate = self
-
         view.addSubview(tableView)
         view.addSubview(bottomBar)
         bottomBar.addArrangedSubview(doneButton)
         doneButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
         tableView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 0, right: 0)
+    }
 
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -83,7 +89,9 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
             bottomBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             bottomBar.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -16)
         ])
+    }
 
+    private func setupActions() {
         doneButton.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             self.onDone?(self.selection)

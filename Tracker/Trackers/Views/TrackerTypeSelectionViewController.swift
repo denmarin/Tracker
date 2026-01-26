@@ -26,38 +26,44 @@ final class TrackerTypeSelectionViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         navigationItem.title = "Создание трекера"
-        setup()
+        setupViews()
+        setupConstraints()
+        setupActions()
     }
 
-    private func setup() {
-        view.addSubview(stack)
-        stack.addArrangedSubview(habitButton)
-        stack.addArrangedSubview(irregularButton)
+	private func setupViews() {
+		view.addSubview(stack)
+		stack.addArrangedSubview(habitButton)
+		stack.addArrangedSubview(irregularButton)
+	}
 
-        NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
+	private func setupConstraints() {
+		NSLayoutConstraint.activate([
+			stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+			stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+			stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+		])
+	}
 
-        habitButton.addAction(UIAction { [weak self] _ in
-            guard let self else { return }
-            let vc = HabitCreationViewController()
+	private func setupActions() {
+		habitButton.addAction(UIAction { [weak self] _ in
+			guard let self else { return }
+			let vc = HabitCreationViewController()
 			vc.onCreate = { [weak self] tracker, category in
 				self?.onCreate?(tracker, category)
 			}
-            self.navigationController?.pushViewController(vc, animated: true)
-        }, for: .touchUpInside)
+			self.navigationController?.pushViewController(vc, animated: true)
+		}, for: .touchUpInside)
 
-        irregularButton.addAction(UIAction { [weak self] _ in
-            guard let self else { return }
-            let vc = IrregularEventCreationViewController()
+		irregularButton.addAction(UIAction { [weak self] _ in
+			guard let self else { return }
+			let vc = IrregularEventCreationViewController()
 			vc.onCreate = { [weak self] tracker, category in
 				self?.onCreate?(tracker, category)
 			}
-            self.navigationController?.pushViewController(vc, animated: true)
-        }, for: .touchUpInside)
-    }
+			self.navigationController?.pushViewController(vc, animated: true)
+		}, for: .touchUpInside)
+	}
 
     private func makePrimaryButton(title: String) -> UIButton {
         let button = UIButton(type: .system)

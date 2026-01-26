@@ -10,8 +10,19 @@ import UIKit
 final class HabitCreationViewController: UIViewController {
     var onCreate: ((Tracker, String) -> Void)?
 
-    private let scrollView = UIScrollView()
-    private let contentView = UIView()
+    private lazy var scrollView = UIScrollView()
+    private lazy var contentView = UIView()
+	
+	private let categoryRow = SettingsRowButton()
+	private let scheduleRow = SettingsRowButton()
+	
+	private let stack: UIStackView = {
+		let s = UIStackView()
+		s.axis = .vertical
+		s.spacing = 16
+		s.translatesAutoresizingMaskIntoConstraints = false
+		return s
+	}()
 
     private let titleField: UITextField = {
         let tf = UITextField()
@@ -25,10 +36,7 @@ final class HabitCreationViewController: UIViewController {
         tf.translatesAutoresizingMaskIntoConstraints = false
         return tf
     }()
-
-    private let categoryRow = SettingsRowButton()
-    private let scheduleRow = SettingsRowButton()
-
+	
     private let bottomBar: UIStackView = {
         let v = UIStackView()
         v.axis = .horizontal
@@ -75,118 +83,117 @@ final class HabitCreationViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .ypBackground
         navigationItem.title = "Новая привычка"
-        setup()
+        setupViews()
+		setupConstraints()
+		setupActions()
         updateCreateButtonState()
     }
 
-    private func setup() {
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        
-        scrollView.keyboardDismissMode = .onDrag
-        scrollView.alwaysBounceVertical = true
-        
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
+	private func setupViews() {
+		// Configure scroll view hierarchy and basic properties
+		scrollView.translatesAutoresizingMaskIntoConstraints = false
+		contentView.translatesAutoresizingMaskIntoConstraints = false
+		scrollView.keyboardDismissMode = .onDrag
+		scrollView.alwaysBounceVertical = true
+		view.addSubview(scrollView)
+		scrollView.addSubview(contentView)
 
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
-        ])
+		// Add and configure stack and arranged subviews
+		contentView.addSubview(stack)
+		stack.addArrangedSubview(titleField)
+		categoryRow.configure(title: "Категория")
+		scheduleRow.configure(title: "Расписание")
+		scheduleRow.setValueText(scheduleSummary(from: selectedSchedule))
+		stack.addArrangedSubview(categoryRow)
+		stack.addArrangedSubview(scheduleRow)
 
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.spacing = 16
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(stack)
+		// Delegates
+		titleField.delegate = self
 
-        stack.addArrangedSubview(titleField)
-        titleField.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        categoryRow.configure(title: "Категория")
-        scheduleRow.configure(title: "Расписание")
-        scheduleRow.setValueText(scheduleSummary(from: selectedSchedule))
-        stack.addArrangedSubview(categoryRow)
-        stack.addArrangedSubview(scheduleRow)
+		// Bottom bar and buttons
+		view.addSubview(bottomBar)
+		bottomBar.addArrangedSubview(cancelButton)
+		bottomBar.addArrangedSubview(createButton)
+	}
 
-        titleField.delegate = self
+	private func setupConstraints() {
+		// ScrollView and contentView constraints
+		NSLayoutConstraint.activate([
+			scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+			scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+			scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+			scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+		])
+		NSLayoutConstraint.activate([
+			contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+			contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+			contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+			contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+			contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+		])
 
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
-            stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24)
-        ])
+		// Stack constraints
+		NSLayoutConstraint.activate([
+			stack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
+			stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+			stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+			stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24)
+		])
 
-        view.addSubview(bottomBar)
+		// Control heights
+		titleField.heightAnchor.constraint(equalToConstant: 60).isActive = true
+		cancelButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
+		createButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
 
-        bottomBar.addArrangedSubview(cancelButton)
-        bottomBar.addArrangedSubview(createButton)
-        cancelButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        createButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
+		// Bottom bar constraints
+		NSLayoutConstraint.activate([
+			bottomBar.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+			bottomBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+			bottomBar.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -16)
+		])
+	}
 
-        NSLayoutConstraint.activate([
-            bottomBar.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            bottomBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            bottomBar.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -16)
-        ])
-		
+	private func setupActions() {
 		createButton.configurationUpdateHandler = { button in
 			guard var config = button.configuration else { return }
-
-			if button.isEnabled {
-				config.baseBackgroundColor = .ypBlack
-				config.baseForegroundColor = .white
-			} else {
-				config.baseBackgroundColor = .ypGray
-				config.baseForegroundColor = UIColor.white.withAlphaComponent(0.6)
-			}
-
+			config.baseBackgroundColor = button.isEnabled ? .ypBlack : .ypGray
+			config.baseForegroundColor = .ypWhite
 			button.configuration = config
 		}
 
-        cancelButton.addAction(UIAction { [weak self] _ in
-            self?.navigationController?.popViewController(animated: true)
-        }, for: .touchUpInside)
+		cancelButton.addAction(UIAction { [weak self] _ in
+			self?.navigationController?.popViewController(animated: true)
+		}, for: .touchUpInside)
 
-        createButton.addAction(UIAction { [weak self] _ in
-            guard let self else { return }
-            let name = (self.titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !name.isEmpty else { return }
-            guard !self.selectedSchedule.isEmpty else { return }
-            let tracker = Tracker(title: name, emoji: "🙂", color: .systemBlue, schedule: selectedSchedule)
-            self.onCreate?(tracker, "Без категории")
+		createButton.addAction(UIAction { [weak self] _ in
+			guard let self else { return }
+			let name = (self.titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+			guard !name.isEmpty, !self.selectedSchedule.isEmpty else { return }
+			let tracker = Tracker(title: name, emoji: "🙂", color: .systemBlue, schedule: selectedSchedule)
+			self.onCreate?(tracker, "Без категории")
 			self.navigationController?.dismiss(animated: true)
-        }, for: .touchUpInside)
+		}, for: .touchUpInside)
 
-        categoryRow.addAction(UIAction { [weak self] _ in
-            self?.presentNotImplementedAlert()
-        }, for: .touchUpInside)
+		categoryRow.addAction(UIAction { [weak self] _ in
+			self?.presentNotImplementedAlert()
+		}, for: .touchUpInside)
 
-        scheduleRow.addAction(UIAction { [weak self] _ in
-            guard let self else { return }
-            let vc = ScheduleSelectionViewController(initialSelection: self.selectedSchedule)
-            vc.onDone = { [weak self] selection in
-                guard let self else { return }
-                self.selectedSchedule = selection
-                self.scheduleRow.setValueText(self.scheduleSummary(from: selection))
-                self.updateCreateButtonState()
-            }
-            self.navigationController?.pushViewController(vc, animated: true)
-        }, for: .touchUpInside)
+		scheduleRow.addAction(UIAction { [weak self] _ in
+			guard let self else { return }
+			let vc = ScheduleSelectionViewController(initialSelection: self.selectedSchedule)
+			vc.onDone = { [weak self] selection in
+				guard let self else { return }
+				self.selectedSchedule = selection
+				self.scheduleRow.setValueText(self.scheduleSummary(from: selection))
+				self.updateCreateButtonState()
+			}
+			self.navigationController?.pushViewController(vc, animated: true)
+		}, for: .touchUpInside)
 
-        titleField.addAction(UIAction { [weak self] _ in
-            self?.updateCreateButtonState()
-        }, for: .editingChanged)
-    }
+		titleField.addAction(UIAction { [weak self] _ in
+			self?.updateCreateButtonState()
+		}, for: .editingChanged)
+	}
 
 	private func updateCreateButtonState() {
 		let hasText = !(titleField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
