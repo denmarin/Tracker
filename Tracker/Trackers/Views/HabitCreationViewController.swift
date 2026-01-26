@@ -90,7 +90,6 @@ final class HabitCreationViewController: UIViewController {
     }
 
 	private func setupViews() {
-		// Configure scroll view hierarchy and basic properties
 		scrollView.translatesAutoresizingMaskIntoConstraints = false
 		contentView.translatesAutoresizingMaskIntoConstraints = false
 		scrollView.keyboardDismissMode = .onDrag
@@ -98,7 +97,6 @@ final class HabitCreationViewController: UIViewController {
 		view.addSubview(scrollView)
 		scrollView.addSubview(contentView)
 
-		// Add and configure stack and arranged subviews
 		contentView.addSubview(stack)
 		stack.addArrangedSubview(titleField)
 		categoryRow.configure(title: "Категория")
@@ -107,17 +105,14 @@ final class HabitCreationViewController: UIViewController {
 		stack.addArrangedSubview(categoryRow)
 		stack.addArrangedSubview(scheduleRow)
 
-		// Delegates
 		titleField.delegate = self
 
-		// Bottom bar and buttons
 		view.addSubview(bottomBar)
 		bottomBar.addArrangedSubview(cancelButton)
 		bottomBar.addArrangedSubview(createButton)
 	}
 
 	private func setupConstraints() {
-		// ScrollView and contentView constraints
 		NSLayoutConstraint.activate([
 			scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
 			scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -131,21 +126,17 @@ final class HabitCreationViewController: UIViewController {
 			contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
 			contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
 		])
-
-		// Stack constraints
 		NSLayoutConstraint.activate([
 			stack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
 			stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
 			stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 			stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24)
 		])
-
-		// Control heights
+		
 		titleField.heightAnchor.constraint(equalToConstant: 60).isActive = true
 		cancelButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
 		createButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
 
-		// Bottom bar constraints
 		NSLayoutConstraint.activate([
 			bottomBar.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
 			bottomBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),

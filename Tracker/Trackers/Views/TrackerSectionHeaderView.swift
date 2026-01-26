@@ -24,9 +24,10 @@ final class TrackerSectionHeaderView: UICollectionReusableView {
         ])
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		nil
+	}
     
     func configure(title: String) {
         titleLabel.text = title
