@@ -39,7 +39,8 @@ final class HabitCreationViewController: CreationViewController {
 			self.navigationController?.pushViewController(vc, animated: true)
 		}, for: .touchUpInside)
 
-		return [categoryRow, scheduleRow]
+		let group = SettingsGroupView(rows: [categoryRow, scheduleRow])
+		return [group]
 	}
 
 	override func isFormValid(title: String) -> Bool {

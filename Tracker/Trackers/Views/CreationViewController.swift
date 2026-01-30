@@ -19,9 +19,18 @@ class CreationViewController: UIViewController {
 	private let stack: UIStackView = {
 		let s = UIStackView()
 		s.axis = .vertical
-		s.spacing = 16
+		s.spacing = 24
 		s.translatesAutoresizingMaskIntoConstraints = false
 		return s
+	}()
+	
+	private let headerLabel: UILabel = {
+		let label = UILabel()
+		label.font = .systemFont(ofSize: 16, weight: .medium)
+		label.textColor = .ypBlack
+		label.textAlignment = .center
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
 	}()
 
 	private let bottomBar: UIStackView = {
@@ -36,7 +45,7 @@ class CreationViewController: UIViewController {
 	let titleField: UITextField = {
 		let tf = UITextField()
 		tf.placeholder = "Введите название трекера"
-		tf.backgroundColor = .ypWhite
+		tf.backgroundColor = .ypBackground
 		tf.layer.cornerRadius = 16
 		tf.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
 		tf.leftViewMode = .always
@@ -53,7 +62,7 @@ class CreationViewController: UIViewController {
 		config.baseForegroundColor = .ypRed
 		config.background.strokeColor = .ypRed
 		config.background.strokeWidth = 1
-		config.cornerStyle = .large
+		config.background.cornerRadius = 16
 		b.configuration = config
 		b.translatesAutoresizingMaskIntoConstraints = false
 		return b
@@ -99,7 +108,7 @@ class CreationViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .ypBackground
-		navigationItem.title = screenTitle
+		headerLabel.text = screenTitle
 
 		configureTitleFieldAppearance(titleField)
 
@@ -108,6 +117,11 @@ class CreationViewController: UIViewController {
 		setupActions()
 
 		updateCreateButtonState()
+	}
+	
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		navigationController?.setNavigationBarHidden(true, animated: false)
 	}
 
 	// MARK: - Setup
@@ -123,6 +137,7 @@ class CreationViewController: UIViewController {
 
 		contentView.addSubview(stack)
 
+		stack.addArrangedSubview(headerLabel)
 		stack.addArrangedSubview(titleField)
 
 		makeRows().forEach { stack.addArrangedSubview($0) }
@@ -156,7 +171,8 @@ class CreationViewController: UIViewController {
 			stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 			stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24)
 		])
-
+		
+		headerLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
 		titleField.heightAnchor.constraint(equalToConstant: 60).isActive = true
 		cancelButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
 		createButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
@@ -177,7 +193,7 @@ class CreationViewController: UIViewController {
 		}
 
 		cancelButton.addAction(UIAction { [weak self] _ in
-			self?.navigationController?.popViewController(animated: true)
+			self?.navigationController?.dismiss(animated: true)
 		}, for: .touchUpInside)
 
 		createButton.addAction(UIAction { [weak self] _ in

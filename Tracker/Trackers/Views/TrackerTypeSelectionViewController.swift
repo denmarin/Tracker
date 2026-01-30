@@ -30,6 +30,11 @@ final class TrackerTypeSelectionViewController: UIViewController {
         setupConstraints()
         setupActions()
     }
+	
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		navigationController?.setNavigationBarHidden(false, animated: false)
+	}
 
 	private func setupViews() {
 		view.addSubview(stack)

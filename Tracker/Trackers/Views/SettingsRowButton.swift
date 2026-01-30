@@ -15,38 +15,41 @@ final class SettingsRowButton: UIControl {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .ypWhite
-        layer.cornerRadius = 10
-        layer.masksToBounds = true
+		backgroundColor = .clear
 
         titleLabel.font = .systemFont(ofSize: 17)
         titleLabel.textColor = .ypBlack
 
         valueLabel.font = .systemFont(ofSize: 17)
         valueLabel.textColor = UIColor.ypBlack.withAlphaComponent(0.6)
-        valueLabel.textAlignment = .right
-        valueLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        valueLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+		valueLabel.numberOfLines = 1
+		valueLabel.isHidden = true
 
         chevron.tintColor = UIColor.ypBlack.withAlphaComponent(0.3)
         chevron.setContentHuggingPriority(.required, for: .horizontal)
         chevron.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel, chevron])
-        stack.isUserInteractionEnabled = false
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = 8
-        stack.translatesAutoresizingMaskIntoConstraints = false
+		let labelsStack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+		labelsStack.axis = .vertical
+		labelsStack.spacing = 2
+		labelsStack.isUserInteractionEnabled = false
+		labelsStack.translatesAutoresizingMaskIntoConstraints = false
 
-        addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            heightAnchor.constraint(greaterThanOrEqualToConstant: 60)
-        ])
+		let rowStack = UIStackView(arrangedSubviews: [labelsStack, chevron])
+		rowStack.axis = .horizontal
+		rowStack.alignment = .center
+		rowStack.spacing = 8
+		rowStack.isUserInteractionEnabled = false
+		rowStack.translatesAutoresizingMaskIntoConstraints = false
+
+		addSubview(rowStack)
+		NSLayoutConstraint.activate([
+			rowStack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+			rowStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
+			rowStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+			rowStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+			heightAnchor.constraint(greaterThanOrEqualToConstant: 60)
+		])
         chevron.widthAnchor.constraint(equalToConstant: 12).isActive = true
     }
 
@@ -61,8 +64,8 @@ final class SettingsRowButton: UIControl {
     
     func setValueText(_ text: String?) {
         let trimmed = (text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        valueLabel.text = trimmed.isEmpty ? nil : trimmed
-        valueLabel.isHidden = trimmed.isEmpty
+		valueLabel.text = trimmed
+		valueLabel.isHidden = trimmed.isEmpty
     }
 }
 

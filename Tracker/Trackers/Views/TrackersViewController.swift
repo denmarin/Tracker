@@ -202,12 +202,23 @@ final class TrackersViewController: UIViewController {
 	}
 	
 	private func didTapCreateTracker() {
-        let typeVC = TrackerTypeSelectionViewController()
-        typeVC.onCreate = { [weak self] tracker, categoryTitle in
-            self?.addTracker(tracker, toCategoryWithTitle: categoryTitle)
-        }
-        let nav = UINavigationController(rootViewController: typeVC)
-        present(nav, animated: true)
+		let typeVC = TrackerTypeSelectionViewController()
+		typeVC.onCreate = { [weak self] tracker, categoryTitle in
+			self?.addTracker(tracker, toCategoryWithTitle: categoryTitle)
+		}
+
+		let nav = UINavigationController(rootViewController: typeVC)
+
+		nav.modalPresentationStyle = .pageSheet
+		if let sheet = nav.sheetPresentationController {
+			sheet.detents = [.large()]
+			sheet.prefersGrabberVisible = false
+			if #available(iOS 16.0, *) {
+				sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+			}
+		}
+
+		present(nav, animated: true)
 	}
 	
 	private func didChangeDate() {

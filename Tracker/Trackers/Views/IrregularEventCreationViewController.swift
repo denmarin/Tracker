@@ -18,7 +18,7 @@ final class IrregularEventCreationViewController: CreationViewController {
 		categoryRow.addAction(UIAction { [weak self] _ in
 			self?.presentNotImplementedAlert()
 		}, for: .touchUpInside)
-		return [categoryRow]
+		return [SettingsGroupView(rows: [categoryRow])]
 	}
 
 	override func makeTracker(title: String) -> Tracker {

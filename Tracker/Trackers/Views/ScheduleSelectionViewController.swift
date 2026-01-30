@@ -68,6 +68,11 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
         setupActions()
     }
 
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		navigationController?.setNavigationBarHidden(false, animated: false)
+	}
+	
     private func setupViews() {
         tableView.dataSource = self
         tableView.delegate = self
