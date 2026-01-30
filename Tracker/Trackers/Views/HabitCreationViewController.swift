@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class HabitCreationViewController: TrackerCreationBaseViewController {
+final class HabitCreationViewController: CreationViewController {
 
 	private let categoryRow = SettingsRowButton()
 	private let scheduleRow = SettingsRowButton()

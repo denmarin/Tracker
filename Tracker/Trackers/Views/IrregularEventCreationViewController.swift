@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class IrregularEventCreationViewController: TrackerCreationBaseViewController {
+final class IrregularEventCreationViewController: CreationViewController {
 
 	private let categoryRow = SettingsRowButton()
 

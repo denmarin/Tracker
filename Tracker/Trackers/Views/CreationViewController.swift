@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TrackerCreationBaseViewController: UIViewController {
+class CreationViewController: UIViewController {
 
 	var onCreate: ((Tracker, String) -> Void)?
 
@@ -228,7 +228,7 @@ class TrackerCreationBaseViewController: UIViewController {
 }
 
 // MARK: - UITextFieldDelegate
-extension TrackerCreationBaseViewController: UITextFieldDelegate {
+extension CreationViewController: UITextFieldDelegate {
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
 		return true
