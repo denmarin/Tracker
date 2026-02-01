@@ -8,20 +8,5 @@
 import UIKit
 
 final class IrregularEventCreationViewController: CreationViewController {
-
-	private let categoryRow = SettingsRowButton()
-
 	override var screenTitle: String { "Новое нерегулярное событие" }
-
-	override func makeRows() -> [UIView] {
-		categoryRow.configure(title: "Категория")
-		categoryRow.addAction(UIAction { [weak self] _ in
-			self?.presentNotImplementedAlert()
-		}, for: .touchUpInside)
-		return [SettingsGroupView(rows: [categoryRow])]
-	}
-
-	override func makeTracker(title: String) -> Tracker {
-		Tracker(title: title, emoji: "🙂", color: .systemBlue, schedule: [])
-	}
 }

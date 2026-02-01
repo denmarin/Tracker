@@ -85,7 +85,7 @@ final class TrackerCell: UICollectionViewCell {
         let image = UIImage(systemName: imageName)
         toggleButton.setImage(image, for: .normal)
         toggleButton.backgroundColor = tracker.color
-        toggleButton.tintColor = .white
+        toggleButton.tintColor = .ypWhite
         
         contentView.alpha = isCompleted ? 0.6 : 1.0
     }

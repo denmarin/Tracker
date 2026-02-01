@@ -24,7 +24,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .ypBackground
         navigationItem.title = "Создание трекера"
         setupViews()
         setupConstraints()
@@ -74,8 +74,8 @@ final class TrackerTypeSelectionViewController: UIViewController {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
         config.title = title
-        config.baseBackgroundColor = UIColor.ypBlack
-        config.baseForegroundColor = .white
+        config.baseBackgroundColor = .ypBlack
+        config.baseForegroundColor = .ypWhite
         config.cornerStyle = .large
         config.contentInsets = NSDirectionalEdgeInsets(top: 18, leading: 16, bottom: 18, trailing: 16)
         button.configuration = config

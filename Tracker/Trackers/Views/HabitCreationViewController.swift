@@ -9,7 +9,6 @@ import UIKit
 
 final class HabitCreationViewController: CreationViewController {
 
-	private let categoryRow = SettingsRowButton()
 	private let scheduleRow = SettingsRowButton()
 
 	private var selectedSchedule: Set<Weekday> = [] {
@@ -21,14 +20,11 @@ final class HabitCreationViewController: CreationViewController {
 
 	override var screenTitle: String { "Новая привычка" }
 
-	override func makeRows() -> [UIView] {
-		categoryRow.configure(title: "Категория")
+	override func additionalRows() -> [SettingsRowButton] {
 		scheduleRow.configure(title: "Расписание")
 		scheduleRow.setValueText(scheduleSummary(from: selectedSchedule))
-
-		categoryRow.addAction(UIAction { [weak self] _ in
-			self?.presentNotImplementedAlert()
-		}, for: .touchUpInside)
+		
+		scheduleRow.heightAnchor.constraint(equalToConstant: 75).isActive = true
 
 		scheduleRow.addAction(UIAction { [weak self] _ in
 			guard let self else { return }
@@ -39,16 +35,21 @@ final class HabitCreationViewController: CreationViewController {
 			self.navigationController?.pushViewController(vc, animated: true)
 		}, for: .touchUpInside)
 
-		let group = SettingsGroupView(rows: [categoryRow, scheduleRow])
-		return [group]
+		return [scheduleRow]
 	}
 
-	override func isFormValid(title: String) -> Bool {
-		!title.isEmpty && !selectedSchedule.isEmpty
+	override func isFormValid(title: String, emoji: String?, colorIndex: Int?) -> Bool {
+		!title.isEmpty && !selectedSchedule.isEmpty && emoji != nil && colorIndex != nil
 	}
 
 	override func makeTracker(title: String) -> Tracker {
-		Tracker(title: title, emoji: "🙂", color: .systemBlue, schedule: selectedSchedule)
+		let base = super.makeTracker(title: title)
+		return Tracker(
+			title: base.title,
+			emoji: base.emoji,
+			color: base.color,
+			schedule: selectedSchedule
+		)
 	}
 
 	private func scheduleSummary(from selection: Set<Weekday>) -> String {
@@ -58,4 +59,8 @@ final class HabitCreationViewController: CreationViewController {
 			.map { $0.shortName }
 		return items.joined(separator: ", ")
 	}
+}
+
+#Preview {
+	HabitCreationViewController()
 }
