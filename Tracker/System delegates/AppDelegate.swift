@@ -10,11 +10,20 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+	let coreDataStack = CoreDataStack()
 
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-		// Override point for customization after application launch.
+		coreDataStack.load()
 		return true
+	}
+
+	func applicationDidEnterBackground(_ application: UIApplication) {
+		coreDataStack.saveContext()
+	}
+
+	func applicationWillTerminate(_ application: UIApplication) {
+		coreDataStack.saveContext()
 	}
 
 	// MARK: UISceneSession Lifecycle
@@ -33,4 +42,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
-
