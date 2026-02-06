@@ -127,8 +127,8 @@ final class TrackersViewController: UIViewController {
 		setupViews()
 		setupConstraints()
 		setupActions()
-		loadData()
-        applyFiltersAndReload()
+		bindStoreUpdates()
+		reloadDataFromStores()
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -242,13 +242,19 @@ final class TrackersViewController: UIViewController {
         applyFiltersAndReload()
 	}
 
-	private func loadData() {
-		do {
-			categories = try trackerStore.fetchAll()
-			completedTrackers = try trackerRecordStore.fetchAll()
-		} catch {
-			assertionFailure("Failed to load tracker data: \(error)")
+	private func bindStoreUpdates() {
+		trackerStore.onDidUpdate = { [weak self] in
+			self?.reloadDataFromStores()
 		}
+		trackerRecordStore.onDidUpdate = { [weak self] in
+			self?.reloadDataFromStores()
+		}
+	}
+
+	private func reloadDataFromStores() {
+		categories = trackerStore.fetchAll()
+		completedTrackers = trackerRecordStore.fetchAll()
+		applyFiltersAndReload()
 	}
     
     // MARK: - Helpers
@@ -319,7 +325,6 @@ final class TrackersViewController: UIViewController {
 		if !completedTrackers.contains(record) {
 			do {
 				try trackerRecordStore.add(record)
-				completedTrackers.append(record)
 			} catch {
 				assertionFailure("Failed to save tracker record: \(error)")
 			}
@@ -328,10 +333,9 @@ final class TrackersViewController: UIViewController {
 
 	func unmarkTrackerCompleted(for tracker: Tracker, on date: Date) {
 		let key = TrackerRecord(trackerId: tracker.id, date: date)
-		if let index = completedTrackers.firstIndex(of: key) {
+		if completedTrackers.contains(key) {
 			do {
 				try trackerRecordStore.delete(key)
-				completedTrackers.remove(at: index)
 			} catch {
 				assertionFailure("Failed to delete tracker record: \(error)")
 			}
@@ -342,8 +346,6 @@ final class TrackersViewController: UIViewController {
 	func addTracker(_ tracker: Tracker, toCategoryWithTitle title: String) {
 		do {
 			try trackerStore.add(tracker, toCategoryWithTitle: title)
-			categories = try trackerStore.fetchAll()
-			applyFiltersAndReload()
 		} catch {
 			assertionFailure("Failed to add tracker: \(error)")
 		}
@@ -364,13 +366,13 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
         }
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.item]
         let isCompleted = isTrackerCompleted(tracker, on: normalizedSelectedDate())
-        let count = completedCount(for: tracker)
+		let count = completedCount(for: tracker)
         cell.configure(with: tracker, isCompleted: isCompleted, completedCount: count)
 		cell.onToggle = { [weak self, weak cell] in
 			guard
 				let self,
 				let cell,
-				let currentIndexPath = collectionView.indexPath(for: cell)
+				collectionView.indexPath(for: cell) != nil
 			else { return }
 
 			if self.isFutureSelectedDate() {
@@ -384,8 +386,6 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 			} else {
 				self.markTrackerCompleted(for: tracker, on: date)
 			}
-
-			collectionView.reloadItems(at: [currentIndexPath])
 		}
         return cell
     }

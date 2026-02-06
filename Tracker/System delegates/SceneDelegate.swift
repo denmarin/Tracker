@@ -17,7 +17,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
 
 		let coreDataStack = appDelegate.coreDataStack
-		let trackerStore = TrackerStore(coreDataStack: coreDataStack)
+		let trackerCategoryStore = TrackerCategoryStore(coreDataStack: coreDataStack)
+		let trackerStore = TrackerStore(coreDataStack: coreDataStack, categoryStore: trackerCategoryStore)
 		let trackerRecordStore = TrackerRecordStore(coreDataStack: coreDataStack)
 		let trackersVC = TrackersViewController(trackerStore: trackerStore, trackerRecordStore: trackerRecordStore)
 		let trackersNav = UINavigationController(rootViewController: trackersVC)

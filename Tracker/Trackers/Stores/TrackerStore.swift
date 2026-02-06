@@ -8,7 +8,7 @@
 import CoreData
 import UIKit
 
-final class TrackerStore {
+final class TrackerStore: NSObject {
 	private enum TrackerEntity {
 		static let name = "TrackerCoreData"
 		static let id = "id"
@@ -25,21 +25,39 @@ final class TrackerStore {
 		static let trackers = "trackers"
 	}
 
+	var onDidUpdate: (() -> Void)?
+
 	private let coreDataStack: CoreDataStack
 	private let categoryStore: TrackerCategoryStore
+
+	private lazy var fetchedResultsController: NSFetchedResultsController<NSManagedObject> = {
+		let request = NSFetchRequest<NSManagedObject>(entityName: TrackerEntity.name)
+		request.sortDescriptors = [
+			NSSortDescriptor(key: TrackerEntity.createdAt, ascending: true),
+			NSSortDescriptor(key: TrackerEntity.title, ascending: true)
+		]
+		return NSFetchedResultsController(
+			fetchRequest: request,
+			managedObjectContext: coreDataStack.viewContext,
+			sectionNameKeyPath: nil,
+			cacheName: nil
+		)
+	}()
 
 	init(coreDataStack: CoreDataStack, categoryStore: TrackerCategoryStore) {
 		self.coreDataStack = coreDataStack
 		self.categoryStore = categoryStore
+		super.init()
+		bindCategoryStore()
+		configureFetchedResultsController()
 	}
 
 	convenience init(coreDataStack: CoreDataStack) {
 		self.init(coreDataStack: coreDataStack, categoryStore: TrackerCategoryStore(coreDataStack: coreDataStack))
 	}
 
-	func fetchAll() throws -> [TrackerCategory] {
-		let categoryObjects = try categoryStore.fetchAllCategoryObjects()
-		return categoryObjects.map { categoryObject in
+	func fetchAll() -> [TrackerCategory] {
+		categoryStore.fetchAllCategoryObjects().map { categoryObject in
 			let title = (categoryObject.value(forKey: CategoryEntity.title) as? String) ?? ""
 			let trackers = trackerObjects(from: categoryObject)
 				.compactMap { trackerObject in
@@ -67,6 +85,21 @@ final class TrackerStore {
 		coreDataStack.saveContext()
 	}
 
+	private func bindCategoryStore() {
+		categoryStore.onDidUpdate = { [weak self] in
+			self?.onDidUpdate?()
+		}
+	}
+
+	private func configureFetchedResultsController() {
+		fetchedResultsController.delegate = self
+		do {
+			try fetchedResultsController.performFetch()
+		} catch {
+			assertionFailure("Failed to fetch trackers: \(error)")
+		}
+	}
+
 	private func fetchTrackerObject(by id: UUID, in context: NSManagedObjectContext) throws -> NSManagedObject? {
 		let request = NSFetchRequest<NSManagedObject>(entityName: TrackerEntity.name)
 		request.fetchLimit = 1
@@ -85,13 +118,22 @@ final class TrackerStore {
 			return nil
 		}
 
-		let scheduleArray = (trackerObject.value(forKey: TrackerEntity.schedule) as? [Weekday]) ?? []
+		let scheduleValue = trackerObject.value(forKey: TrackerEntity.schedule)
+		let weekdays: [Weekday]
+		if let array = scheduleValue as? [Weekday] {
+			weekdays = array
+		} else if let set = scheduleValue as? Set<Weekday> {
+			weekdays = Array(set)
+		} else {
+			weekdays = []
+		}
+
 		return Tracker(
 			id: id,
 			title: title,
 			emoji: emoji,
 			color: color,
-			schedule: Set(scheduleArray),
+			schedule: Set(weekdays),
 			createdAt: createdAt
 		)
 	}
@@ -104,5 +146,11 @@ final class TrackerStore {
 			return Array(set)
 		}
 		return []
+	}
+}
+
+extension TrackerStore: NSFetchedResultsControllerDelegate {
+	func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
+		onDidUpdate?()
 	}
 }
