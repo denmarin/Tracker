@@ -11,8 +11,8 @@ import UIKit
 final class ColorCollectionCell: UICollectionViewCell {
     static let reuseId = "ColorCollectionCell"
 
-	private let outerRingView = UIView()
-	private let whiteRingView = UIView()
+	private let selectionOuterView = UIView()
+	private let selectionInnerView = UIView()
 	private let colorView = UIView()
 
     override init(frame: CGRect) {
@@ -21,24 +21,24 @@ final class ColorCollectionCell: UICollectionViewCell {
         contentView.layer.cornerRadius = 16
         contentView.layer.masksToBounds = true
 
-		contentView.addSubview(outerRingView)
-		contentView.addSubview(whiteRingView)
+		contentView.addSubview(selectionOuterView)
+		contentView.addSubview(selectionInnerView)
 		contentView.addSubview(colorView)
 
-		[outerRingView, whiteRingView, colorView].forEach {
+		[selectionOuterView, selectionInnerView, colorView].forEach {
 			$0.translatesAutoresizingMaskIntoConstraints = false
 		}
 
 		NSLayoutConstraint.activate([
-			outerRingView.widthAnchor.constraint(equalToConstant: 52),
-			outerRingView.heightAnchor.constraint(equalToConstant: 52),
-			outerRingView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-			outerRingView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			selectionOuterView.widthAnchor.constraint(equalToConstant: 52),
+			selectionOuterView.heightAnchor.constraint(equalToConstant: 52),
+			selectionOuterView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+			selectionOuterView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 
-			whiteRingView.widthAnchor.constraint(equalToConstant: 46),
-			whiteRingView.heightAnchor.constraint(equalToConstant: 46),
-			whiteRingView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-			whiteRingView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			selectionInnerView.widthAnchor.constraint(equalToConstant: 46),
+			selectionInnerView.heightAnchor.constraint(equalToConstant: 46),
+			selectionInnerView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+			selectionInnerView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 
 			colorView.widthAnchor.constraint(equalToConstant: 40),
 			colorView.heightAnchor.constraint(equalToConstant: 40),
@@ -46,16 +46,14 @@ final class ColorCollectionCell: UICollectionViewCell {
 			colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 		])
 
-		outerRingView.layer.cornerRadius = 16
-		whiteRingView.layer.cornerRadius = 16
+		selectionOuterView.layer.cornerRadius = 16
+		selectionInnerView.layer.cornerRadius = 14
+		selectionInnerView.backgroundColor = .ypWhite
 		colorView.layer.cornerRadius = 12
 		colorView.layer.masksToBounds = true
 
-		outerRingView.layer.borderWidth = 3
-		whiteRingView.layer.borderWidth = 3
-
-		outerRingView.isHidden = true
-		whiteRingView.isHidden = true
+		selectionOuterView.isHidden = true
+		selectionInnerView.isHidden = true
     }
 
     required init?(coder: NSCoder) { nil }
@@ -64,14 +62,12 @@ final class ColorCollectionCell: UICollectionViewCell {
 		colorView.backgroundColor = color
 
 		if isSelected {
-			outerRingView.isHidden = false
-			whiteRingView.isHidden = false
-
-			outerRingView.layer.borderColor = color.withAlphaComponent(0.3).cgColor
-			whiteRingView.layer.borderColor = UIColor.ypWhite.cgColor
+			selectionOuterView.isHidden = false
+			selectionInnerView.isHidden = false
+			selectionOuterView.backgroundColor = color.withAlphaComponent(0.3)
 		} else {
-			outerRingView.isHidden = true
-			whiteRingView.isHidden = true
+			selectionOuterView.isHidden = true
+			selectionInnerView.isHidden = true
 		}
 	}
 

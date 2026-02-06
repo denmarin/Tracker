@@ -10,6 +10,8 @@ import UIKit
 class CreationViewController: UIViewController {
 	
 	var onCreate: ((Tracker, String) -> Void)?
+
+	private let maxTitleLength = 38
 	
 		// MARK: - Emoji & Color data
 	
@@ -67,6 +69,16 @@ class CreationViewController: UIViewController {
 		tf.returnKeyType = .done
 		tf.translatesAutoresizingMaskIntoConstraints = false
 		return tf
+	}()
+
+	private let titleErrorLabel: UILabel = {
+		let label = UILabel()
+		label.text = "Ограничение 38 символов"
+		label.textColor = .ypRed
+		label.font = .systemFont(ofSize: 17, weight: .regular)
+		label.textAlignment = .center
+		label.isHidden = true
+		return label
 	}()
 	
 	private let cancelButton: UIButton = {
@@ -233,6 +245,7 @@ class CreationViewController: UIViewController {
 		
 		stack.addArrangedSubview(headerLabel)
 		stack.addArrangedSubview(titleField)
+		stack.addArrangedSubview(titleErrorLabel)
 		
 		makeRows().forEach { stack.addArrangedSubview($0) }
 		
@@ -273,6 +286,7 @@ class CreationViewController: UIViewController {
 		
 		headerLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
 		titleField.heightAnchor.constraint(equalToConstant: 75).isActive = true
+		titleErrorLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
 		categoryRow.heightAnchor.constraint(equalToConstant: 75).isActive = true
 		emojiCollectionView.heightAnchor.constraint(equalToConstant: 156).isActive = true
 		colorCollectionView.heightAnchor.constraint(equalToConstant: 156).isActive = true
@@ -330,7 +344,9 @@ class CreationViewController: UIViewController {
 		}
 
 		let title = currentTitle
-		createButton.isEnabled = isFormValid(title: title, emoji: selectedEmoji, colorIndex: selectedColorIndex)
+		let hasValidTitleLength = (titleField.text ?? "").count <= maxTitleLength
+		titleErrorLabel.isHidden = hasValidTitleLength
+		createButton.isEnabled = hasValidTitleLength && isFormValid(title: title, emoji: selectedEmoji, colorIndex: selectedColorIndex)
 
 		createButton.setNeedsUpdateConfiguration()
 	}
