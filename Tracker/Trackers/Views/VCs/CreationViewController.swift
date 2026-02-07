@@ -213,7 +213,7 @@ class CreationViewController: UIViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		view.backgroundColor = .ypBackground
+		view.backgroundColor = .ypWhite
 		headerLabel.text = screenTitle
 		
 		configureTitleFieldAppearance(titleField)

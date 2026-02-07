@@ -24,7 +24,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .ypBackground
+        view.backgroundColor = .ypWhite
         navigationItem.title = "Создание трекера"
         setupViews()
         setupConstraints()

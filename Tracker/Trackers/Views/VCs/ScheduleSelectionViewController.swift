@@ -61,7 +61,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .ypBackground
+        view.backgroundColor = .ypWhite
         navigationItem.title = "Расписание"
         setupViews()
         setupConstraints()
@@ -129,7 +129,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
         let day = daysOrder[indexPath.row]
         cell.textLabel?.text = fullName(for: day)
         cell.selectionStyle = .none
-        cell.backgroundColor = .ypWhite
+        cell.backgroundColor = .ypBackground
         cell.textLabel?.font = .systemFont(ofSize: 17)
         cell.textLabel?.textColor = .ypBlack
 
