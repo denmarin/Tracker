@@ -388,12 +388,18 @@ extension CreationViewController: UICollectionViewDataSource {
 	
 	func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 		if collectionView === emojiCollectionView {
-			let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiCollectionCell.reuseId, for: indexPath) as! EmojiCollectionCell
+			guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiCollectionCell.reuseId, for: indexPath) as? EmojiCollectionCell else {
+				assertionFailure("Failed to dequeue EmojiCollectionCell")
+				return UICollectionViewCell()
+			}
 			let emoji = emojis[indexPath.item]
 			cell.configure(emoji: emoji, isSelected: emoji == selectedEmoji)
 			return cell
 		} else {
-			let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorCollectionCell.reuseId, for: indexPath) as! ColorCollectionCell
+			guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ColorCollectionCell.reuseId, for: indexPath) as? ColorCollectionCell else {
+				assertionFailure("Failed to dequeue ColorCollectionCell")
+				return UICollectionViewCell()
+			}
 			let name = colorAssetNames[indexPath.item]
 			let color = UIColor(named: name) ?? .systemBlue
 			cell.configure(color: color, isSelected: indexPath.item == selectedColorIndex)
