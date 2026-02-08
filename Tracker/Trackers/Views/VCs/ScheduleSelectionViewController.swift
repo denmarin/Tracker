@@ -42,7 +42,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
         var config = UIButton.Configuration.filled()
         config.title = "Готово"
         config.baseBackgroundColor = .ypBlack
-        config.baseForegroundColor = .white
+        config.baseForegroundColor = .ypWhite
         config.cornerStyle = .large
         b.configuration = config
         b.translatesAutoresizingMaskIntoConstraints = false
@@ -61,7 +61,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .ypBackground
+        view.backgroundColor = .ypWhite
         navigationItem.title = "Расписание"
         setupViews()
         setupConstraints()
@@ -88,7 +88,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: bottomBar.topAnchor, constant: -8),
+			tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
             bottomBar.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             bottomBar.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
@@ -129,7 +129,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
         let day = daysOrder[indexPath.row]
         cell.textLabel?.text = fullName(for: day)
         cell.selectionStyle = .none
-        cell.backgroundColor = .ypWhite
+        cell.backgroundColor = .ypBackground
         cell.textLabel?.font = .systemFont(ofSize: 17)
         cell.textLabel?.textColor = .ypBlack
 

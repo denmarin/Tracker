@@ -14,8 +14,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 		guard let windowScene = scene as? UIWindowScene else { return }
 		let window = UIWindow(windowScene: windowScene)
-		
-		let trackersVC = TrackersViewController()
+		guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+
+		let coreDataStack = appDelegate.coreDataStack
+		let trackerCategoryStore = TrackerCategoryStore(coreDataStack: coreDataStack)
+		let trackerStore = TrackerStore(coreDataStack: coreDataStack, categoryStore: trackerCategoryStore)
+		let trackerRecordStore = TrackerRecordStore(coreDataStack: coreDataStack)
+		let trackersVC = TrackersViewController(trackerStore: trackerStore, trackerRecordStore: trackerRecordStore)
 		let trackersNav = UINavigationController(rootViewController: trackersVC)
 		trackersNav.tabBarItem = UITabBarItem(title: "Трекеры", image: UIImage(systemName: "record.circle.fill"), selectedImage: UIImage(systemName: "record.circle.fill"))
 		let statisticsVC = StatisticsViewController()
@@ -30,4 +35,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		self.window = window
 	}
 }
-

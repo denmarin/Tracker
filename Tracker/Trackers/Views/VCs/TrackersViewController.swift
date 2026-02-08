@@ -8,10 +8,12 @@
 import UIKit
 
 final class TrackersViewController: UIViewController {
-	
-	var categories: [TrackerCategory] = []
-    private var filteredCategories: [TrackerCategory] = []
-	var completedTrackers: [TrackerRecord] = []
+	private let trackerStore: TrackerStore
+	private let trackerRecordStore: TrackerRecordStore
+
+	private var categories: [TrackerCategory] = []
+	private var filteredCategories: [TrackerCategory] = []
+	private var completedTrackers: [TrackerRecord] = []
 	
 	private let createTrackerButton: UIButton = {
 		let button = UIButton(type: .system)
@@ -106,15 +108,27 @@ final class TrackersViewController: UIViewController {
 		formatter.dateFormat = "dd.MM.yy"
 		return formatter
 	}()
+
+	init(trackerStore: TrackerStore, trackerRecordStore: TrackerRecordStore) {
+		self.trackerStore = trackerStore
+		self.trackerRecordStore = trackerRecordStore
+		super.init(nibName: nil, bundle: nil)
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) {
+		fatalError("init(coder:) has not been implemented")
+	}
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		view.backgroundColor = .ypBackground
+		view.backgroundColor = .ypWhite
 		
 		setupViews()
 		setupConstraints()
 		setupActions()
-        applyFiltersAndReload()
+		bindStoreUpdates()
+		reloadDataFromStores()
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -227,6 +241,21 @@ final class TrackersViewController: UIViewController {
         view.endEditing(true)
         applyFiltersAndReload()
 	}
+
+	private func bindStoreUpdates() {
+		trackerStore.onDidUpdate = { [weak self] in
+			self?.reloadDataFromStores()
+		}
+		trackerRecordStore.onDidUpdate = { [weak self] in
+			self?.reloadDataFromStores()
+		}
+	}
+
+	private func reloadDataFromStores() {
+		categories = trackerStore.fetchAll()
+		completedTrackers = trackerRecordStore.fetchAll()
+		applyFiltersAndReload()
+	}
     
     // MARK: - Helpers
     private func updatePlaceholderVisibility() {
@@ -294,40 +323,32 @@ final class TrackersViewController: UIViewController {
 	func markTrackerCompleted(for tracker: Tracker, on date: Date) {
 		let record = TrackerRecord(trackerId: tracker.id, date: date)
 		if !completedTrackers.contains(record) {
-			completedTrackers.append(record)
+			do {
+				try trackerRecordStore.add(record)
+			} catch {
+				assertionFailure("Failed to save tracker record: \(error)")
+			}
 		}
 	}
 
 	func unmarkTrackerCompleted(for tracker: Tracker, on date: Date) {
 		let key = TrackerRecord(trackerId: tracker.id, date: date)
-		if let index = completedTrackers.firstIndex(of: key) {
-			completedTrackers.remove(at: index)
+		if completedTrackers.contains(key) {
+			do {
+				try trackerRecordStore.delete(key)
+			} catch {
+				assertionFailure("Failed to delete tracker record: \(error)")
+			}
 		}
 	}
 
-	// MARK: - Category management (immutable updates)
-	/// Добавить трекер в категорию по заголовку, создавая новые копии структур и массивов.
-	/// Если категории с таким заголовком нет, будет создана новая категория в конце списка.
+	// MARK: - Category management
 	func addTracker(_ tracker: Tracker, toCategoryWithTitle title: String) {
-		var hasUpdatedExistingCategory = false
-		let newCategories: [TrackerCategory] = categories.map { category in
-			guard category.title == title else { return category }
-			if category.trackers.contains(where: { $0.id == tracker.id }) {
-				hasUpdatedExistingCategory = true
-				return category
-			}
-			let updatedTrackers = category.trackers + [tracker]
-			hasUpdatedExistingCategory = true
-			return TrackerCategory(title: category.title, trackers: updatedTrackers)
+		do {
+			try trackerStore.add(tracker, toCategoryWithTitle: title)
+		} catch {
+			assertionFailure("Failed to add tracker: \(error)")
 		}
-		
-		if hasUpdatedExistingCategory {
-			categories = newCategories
-		} else {
-			let newCategory = TrackerCategory(title: title, trackers: [tracker])
-			categories = newCategories + [newCategory]
-		}
-		applyFiltersAndReload()
 	}
 }
 
@@ -345,13 +366,13 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
         }
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.item]
         let isCompleted = isTrackerCompleted(tracker, on: normalizedSelectedDate())
-        let count = completedCount(for: tracker)
+		let count = completedCount(for: tracker)
         cell.configure(with: tracker, isCompleted: isCompleted, completedCount: count)
 		cell.onToggle = { [weak self, weak cell] in
 			guard
 				let self,
 				let cell,
-				let currentIndexPath = collectionView.indexPath(for: cell)
+				collectionView.indexPath(for: cell) != nil
 			else { return }
 
 			if self.isFutureSelectedDate() {
@@ -365,8 +386,6 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 			} else {
 				self.markTrackerCompleted(for: tracker, on: date)
 			}
-
-			collectionView.reloadItems(at: [currentIndexPath])
 		}
         return cell
     }
@@ -404,4 +423,3 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
         12
     }
 }
-
