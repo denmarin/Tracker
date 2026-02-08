@@ -13,6 +13,9 @@ final class CoreDataStack {
 		let container = NSPersistentContainer(name: modelName)
 		return container
 	}()
+	var viewContext: NSManagedObjectContext {
+		persistentContainer.viewContext
+	}
 
 	init(modelName: String = "Tracker") {
 		self.modelName = modelName
@@ -25,10 +28,6 @@ final class CoreDataStack {
 				fatalError("Unresolved error \(error), \(error.userInfo)")
 			}
 		}
-	}
-
-	var viewContext: NSManagedObjectContext {
-		persistentContainer.viewContext
 	}
 
 	func saveContext() {

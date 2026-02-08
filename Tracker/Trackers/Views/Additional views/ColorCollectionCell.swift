@@ -9,26 +9,44 @@
 import UIKit
 
 final class ColorCollectionCell: UICollectionViewCell {
-    static let reuseId = "ColorCollectionCell"
+
+	static let reuseId = "ColorCollectionCell"
+
+	// MARK: - Views
 
 	private let selectionOuterView = UIView()
 	private let selectionInnerView = UIView()
 	private let colorView = UIView()
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+	// MARK: - Init
 
-        contentView.layer.cornerRadius = 16
-        contentView.layer.masksToBounds = true
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		setupContentView()
+		setupViews()
+		setupConstraints()
+		setupAppearance()
+	}
 
-		contentView.addSubview(selectionOuterView)
-		contentView.addSubview(selectionInnerView)
-		contentView.addSubview(colorView)
+	required init?(coder: NSCoder) {
+		nil
+	}
 
+	// MARK: - Setup
+
+	private func setupContentView() {
+		contentView.layer.cornerRadius = 16
+		contentView.layer.masksToBounds = true
+	}
+
+	private func setupViews() {
 		[selectionOuterView, selectionInnerView, colorView].forEach {
 			$0.translatesAutoresizingMaskIntoConstraints = false
+			contentView.addSubview($0)
 		}
+	}
 
+	private func setupConstraints() {
 		NSLayoutConstraint.activate([
 			selectionOuterView.widthAnchor.constraint(equalToConstant: 52),
 			selectionOuterView.heightAnchor.constraint(equalToConstant: 52),
@@ -43,38 +61,37 @@ final class ColorCollectionCell: UICollectionViewCell {
 			colorView.widthAnchor.constraint(equalToConstant: 40),
 			colorView.heightAnchor.constraint(equalToConstant: 40),
 			colorView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-			colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+			colorView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
 		])
+	}
 
+	private func setupAppearance() {
 		selectionOuterView.layer.cornerRadius = 16
 		selectionInnerView.layer.cornerRadius = 14
 		selectionInnerView.backgroundColor = .ypWhite
+
 		colorView.layer.cornerRadius = 12
 		colorView.layer.masksToBounds = true
 
 		selectionOuterView.isHidden = true
 		selectionInnerView.isHidden = true
-    }
+	}
 
-    required init?(coder: NSCoder) { nil }
+	// MARK: - Public
 
 	func configure(color: UIColor, isSelected: Bool) {
 		colorView.backgroundColor = color
-
-		if isSelected {
-			selectionOuterView.isHidden = false
-			selectionInnerView.isHidden = false
-			selectionOuterView.backgroundColor = color.withAlphaComponent(0.3)
-		} else {
-			selectionOuterView.isHidden = true
-			selectionInnerView.isHidden = true
-		}
+		selectionOuterView.isHidden = !isSelected
+		selectionInnerView.isHidden = !isSelected
+		selectionOuterView.backgroundColor = isSelected
+			? color.withAlphaComponent(0.3)
+			: nil
 	}
 
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        colorView.backgroundColor = nil
-        contentView.layer.borderWidth = 0
-        contentView.layer.borderColor = UIColor.clear.cgColor
-    }
+	// MARK: - Reuse
+
+	override func prepareForReuse() {
+		super.prepareForReuse()
+		colorView.backgroundColor = nil
+	}
 }

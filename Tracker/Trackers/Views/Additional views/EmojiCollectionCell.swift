@@ -9,39 +9,62 @@
 import UIKit
 
 final class EmojiCollectionCell: UICollectionViewCell {
-    static let reuseId = "EmojiCollectionCell"
 
-    private let label: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 32)
-        l.textAlignment = .center
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
+	static let reuseId = "EmojiCollectionCell"
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        contentView.layer.cornerRadius = 16
-        contentView.layer.masksToBounds = true
+	// MARK: - Views
 
-        contentView.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-    }
+	private let label: UILabel = {
+		let label = UILabel()
+		label.font = .systemFont(ofSize: 32)
+		label.textAlignment = .center
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
 
-    required init?(coder: NSCoder) { nil }
+	// MARK: - Init
 
-    func configure(emoji: String, isSelected: Bool) {
-        label.text = emoji
-        // По макету у выбранного emoji появляется светлая плашка
-        contentView.backgroundColor = isSelected ? UIColor.ypLightGray : .clear
-    }
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		setupContentView()
+		setupViews()
+		setupConstraints()
+	}
 
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        contentView.backgroundColor = .clear
-        label.text = nil
-    }
+	required init?(coder: NSCoder) {
+		nil
+	}
+
+	// MARK: - Setup
+
+	private func setupContentView() {
+		contentView.layer.cornerRadius = 16
+		contentView.layer.masksToBounds = true
+	}
+
+	private func setupViews() {
+		contentView.addSubview(label)
+	}
+
+	private func setupConstraints() {
+		NSLayoutConstraint.activate([
+			label.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+			label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+		])
+	}
+
+	// MARK: - Public
+
+	func configure(emoji: String, isSelected: Bool) {
+		label.text = emoji
+		contentView.backgroundColor = isSelected ? .ypLightGray : .clear
+	}
+
+	// MARK: - Reuse
+
+	override func prepareForReuse() {
+		super.prepareForReuse()
+		label.text = nil
+		contentView.backgroundColor = .clear
+	}
 }
