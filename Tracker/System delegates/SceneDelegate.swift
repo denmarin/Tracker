@@ -13,6 +13,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	// MARK: - Properties
 
 	var window: UIWindow?
+	private let onboardingStateStore = OnboardingStateStore()
 
 	// MARK: - UIWindowSceneDelegate
 
@@ -24,7 +25,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		guard let windowScene = scene as? UIWindowScene else { return }
 
 		let window = makeWindow(windowScene: windowScene)
-		window.rootViewController = makeRootViewController()
+		window.rootViewController = makeInitialRootViewController()
 		window.makeKeyAndVisible()
 
 		self.window = window
@@ -38,13 +39,46 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 	// MARK: - Root View Controller
 
-	private func makeRootViewController() -> UIViewController {
+	private func makeInitialRootViewController() -> UIViewController {
+		if onboardingStateStore.hasSeenOnboarding {
+			return makeMainRootViewController()
+		}
+		return makeOnboardingViewController()
+	}
+
+	private func makeMainRootViewController() -> UIViewController {
 		let tabBarController = UITabBarController()
 		tabBarController.viewControllers = [
 			makeTrackersNavigationController(),
 			makeStatisticsNavigationController()
 		]
 		return tabBarController
+	}
+
+	private func makeOnboardingViewController() -> UIViewController {
+		let onboardingViewController = OnboardingViewController()
+		onboardingViewController.onFinish = { [weak self] in
+			self?.finishOnboardingFlow()
+		}
+		return onboardingViewController
+	}
+
+	private func finishOnboardingFlow() {
+		onboardingStateStore.markOnboardingAsSeen()
+		transitionToMainRoot()
+	}
+
+	private func transitionToMainRoot() {
+		guard let window else { return }
+		let mainRoot = makeMainRootViewController()
+
+		UIView.transition(
+			with: window,
+			duration: 0.3,
+			options: [.transitionCrossDissolve, .allowAnimatedContent]
+		) {
+			window.rootViewController = mainRoot
+		}
 	}
 
 	// MARK: - Navigation Controllers
