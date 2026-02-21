@@ -6,6 +6,7 @@
 
 import CoreData
 import UIKit
+import Combine
 
 final class TrackerStore: NSObject {
 	private enum TrackerEntity {
@@ -25,9 +26,14 @@ final class TrackerStore: NSObject {
 	}
 
 	var onDidUpdate: (() -> Void)?
+	var didUpdatePublisher: AnyPublisher<Void, Never> {
+		didUpdateSubject.eraseToAnyPublisher()
+	}
 
 	private let coreDataStack: CoreDataStack
 	private let categoryStore: TrackerCategoryStore
+	private let didUpdateSubject = PassthroughSubject<Void, Never>()
+	private var cancellables = Set<AnyCancellable>()
 
 	private lazy var fetchedResultsController: NSFetchedResultsController<NSManagedObject> = {
 		let request = NSFetchRequest<NSManagedObject>(entityName: TrackerEntity.name)
@@ -85,9 +91,16 @@ final class TrackerStore: NSObject {
 	}
 
 	private func bindCategoryStore() {
-		categoryStore.onDidUpdate = { [weak self] in
-			self?.onDidUpdate?()
-		}
+		categoryStore.didUpdatePublisher
+			.sink { [weak self] in
+				self?.emitDidUpdate()
+			}
+			.store(in: &cancellables)
+	}
+
+	private func emitDidUpdate() {
+		onDidUpdate?()
+		didUpdateSubject.send(())
 	}
 
 	private func configureFetchedResultsController() {
@@ -150,6 +163,6 @@ final class TrackerStore: NSObject {
 
 extension TrackerStore: NSFetchedResultsControllerDelegate {
 	func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
-		onDidUpdate?()
+		emitDidUpdate()
 	}
 }

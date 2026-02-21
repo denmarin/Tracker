@@ -5,11 +5,13 @@
 //
 
 import UIKit
+import Combine
 
 final class OnboardingViewController: UIViewController {
 	var onFinish: (() -> Void)?
 
 	private let viewModel: OnboardingViewModel
+	private var cancellables = Set<AnyCancellable>()
 
 	private lazy var pageViewController: UIPageViewController = {
 		let vc = UIPageViewController(
@@ -112,13 +114,19 @@ final class OnboardingViewController: UIViewController {
 	}
 
 	private func bindViewModel() {
-		viewModel.onCurrentPageChanged = { [weak self] pageIndex in
-			self?.pageControl.currentPage = pageIndex
-		}
+		viewModel.currentPagePublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] pageIndex in
+				self?.pageControl.currentPage = pageIndex
+			}
+			.store(in: &cancellables)
 
-		viewModel.onFinishRequested = { [weak self] in
-			self?.onFinish?()
-		}
+		viewModel.finishPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] in
+				self?.onFinish?()
+			}
+			.store(in: &cancellables)
 	}
 
 	private func configureInitialState() {

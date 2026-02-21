@@ -4,15 +4,22 @@
 //
 
 import Foundation
+import Combine
 
 final class StatisticsViewModel {
 	struct State {
 		let title: String
 	}
 
-	var onStateChanged: ((State) -> Void)?
+	var statePublisher: AnyPublisher<State, Never> {
+		stateSubject.eraseToAnyPublisher()
+	}
+
+	private let stateSubject = CurrentValueSubject<State, Never>(
+		State(title: "Статистика")
+	)
 
 	func viewDidLoad() {
-		onStateChanged?(State(title: "Статистика"))
+		stateSubject.send(State(title: "Статистика"))
 	}
 }

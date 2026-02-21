@@ -4,13 +4,20 @@
 //
 
 import UIKit
+import Combine
 
 final class OnboardingViewModel {
-	var onCurrentPageChanged: ((Int) -> Void)?
-	var onFinishRequested: (() -> Void)?
+	var currentPagePublisher: AnyPublisher<Int, Never> {
+		currentPageSubject.eraseToAnyPublisher()
+	}
+	var finishPublisher: AnyPublisher<Void, Never> {
+		finishSubject.eraseToAnyPublisher()
+	}
 
 	let pages: [OnboardingPage]
 	private var currentPageIndex: Int
+	private let currentPageSubject: CurrentValueSubject<Int, Never>
+	private let finishSubject = PassthroughSubject<Void, Never>()
 
 	init(
 		pages: [OnboardingPage] = OnboardingViewModel.defaultPages,
@@ -22,20 +29,21 @@ final class OnboardingViewModel {
 		} else {
 			self.currentPageIndex = 0
 		}
+		self.currentPageSubject = CurrentValueSubject(self.currentPageIndex)
 	}
 
 	func viewDidLoad() {
-		onCurrentPageChanged?(currentPageIndex)
+		currentPageSubject.send(currentPageIndex)
 	}
 
 	func didFinishTransition(to index: Int) {
 		guard pages.indices.contains(index) else { return }
 		currentPageIndex = index
-		onCurrentPageChanged?(index)
+		currentPageSubject.send(index)
 	}
 
 	func didTapActionButton() {
-		onFinishRequested?()
+		finishSubject.send(())
 	}
 
 	private static let defaultPages: [OnboardingPage] = [

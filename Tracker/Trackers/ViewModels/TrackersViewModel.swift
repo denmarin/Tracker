@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Combine
 
 struct TrackerItemViewData {
 	let tracker: Tracker
@@ -49,19 +50,31 @@ final class TrackersViewModel {
 		}
 	}
 
-	var onStateChanged: ((State) -> Void)?
-	var onRequestTrackerCreation: (() -> Void)?
-	var onAlert: ((Alert) -> Void)?
+	var statePublisher: AnyPublisher<State, Never> {
+		stateSubject.eraseToAnyPublisher()
+	}
+	var requestTrackerCreationPublisher: AnyPublisher<Void, Never> {
+		requestTrackerCreationSubject.eraseToAnyPublisher()
+	}
+	var alertPublisher: AnyPublisher<Alert, Never> {
+		alertSubject.eraseToAnyPublisher()
+	}
 
 	private let trackerStore: TrackerStore
 	private let trackerRecordStore: TrackerRecordStore
 	private let trackerCategoryStore: TrackerCategoryStore
 	private let calendar: Calendar
 
+	private let stateSubject: CurrentValueSubject<State, Never>
+	private let requestTrackerCreationSubject = PassthroughSubject<Void, Never>()
+	private let alertSubject = PassthroughSubject<Alert, Never>()
+	private let selectedDateSubject: CurrentValueSubject<Date, Never>
+
 	private var categories: [TrackerCategory] = []
 	private var completedTrackers: [TrackerRecord] = []
 	private var selectedDate: Date
 	private var hasBoundStoreUpdates = false
+	private var cancellables = Set<AnyCancellable>()
 
 	init(
 		trackerStore: TrackerStore,
@@ -70,11 +83,16 @@ final class TrackersViewModel {
 		initialDate: Date = Date(),
 		calendar: Calendar = .current
 	) {
+		let normalizedInitialDate = calendar.startOfDay(for: initialDate)
 		self.trackerStore = trackerStore
 		self.trackerRecordStore = trackerRecordStore
 		self.trackerCategoryStore = trackerCategoryStore
 		self.calendar = calendar
-		self.selectedDate = calendar.startOfDay(for: initialDate)
+		self.selectedDate = normalizedInitialDate
+		self.selectedDateSubject = CurrentValueSubject(normalizedInitialDate)
+		self.stateSubject = CurrentValueSubject(
+			State(sections: [], selectedDate: normalizedInitialDate)
+		)
 	}
 
 	func viewDidLoad() {
@@ -83,19 +101,18 @@ final class TrackersViewModel {
 	}
 
 	func didTapCreateTracker() {
-		onRequestTrackerCreation?()
+		requestTrackerCreationSubject.send(())
 	}
 
 	func didChangeSelectedDate(_ date: Date) {
 		let normalizedDate = calendar.startOfDay(for: date)
 		guard normalizedDate != selectedDate else { return }
-		selectedDate = normalizedDate
-		emitState()
+		selectedDateSubject.send(normalizedDate)
 	}
 
 	func didTapToggleCompletion(for trackerID: UUID) {
 		if isFutureSelectedDate() {
-			onAlert?(.futureDateNotAllowed)
+			alertSubject.send(.futureDateNotAllowed)
 			return
 		}
 
@@ -108,7 +125,7 @@ final class TrackersViewModel {
 			}
 		} catch {
 			assertionFailure("Failed to update tracker completion: \(error)")
-			onAlert?(.operationFailed(message: "Не удалось обновить отметку трекера."))
+			alertSubject.send(.operationFailed(message: "Не удалось обновить отметку трекера."))
 		}
 	}
 
@@ -117,7 +134,7 @@ final class TrackersViewModel {
 			try trackerStore.add(tracker, toCategoryWithTitle: title)
 		} catch {
 			assertionFailure("Failed to add tracker: \(error)")
-			onAlert?(.operationFailed(message: "Не удалось создать трекер."))
+			alertSubject.send(.operationFailed(message: "Не удалось создать трекер."))
 		}
 	}
 
@@ -134,12 +151,24 @@ final class TrackersViewModel {
 		guard !hasBoundStoreUpdates else { return }
 		hasBoundStoreUpdates = true
 
-		trackerStore.onDidUpdate = { [weak self] in
+		Publishers.Merge(
+			trackerStore.didUpdatePublisher,
+			trackerRecordStore.didUpdatePublisher
+		)
+		.prepend(())
+		.sink { [weak self] _ in
 			self?.reloadDataFromStores()
 		}
-		trackerRecordStore.onDidUpdate = { [weak self] in
-			self?.reloadDataFromStores()
-		}
+		.store(in: &cancellables)
+
+		selectedDateSubject
+			.removeDuplicates()
+			.sink { [weak self] selectedDate in
+				guard let self else { return }
+				self.selectedDate = selectedDate
+				self.emitState()
+			}
+			.store(in: &cancellables)
 	}
 
 	private func reloadDataFromStores() {
@@ -150,7 +179,7 @@ final class TrackersViewModel {
 
 	private func emitState() {
 		let sections = makeFilteredSections(for: selectedDate)
-		onStateChanged?(State(sections: sections, selectedDate: selectedDate))
+		stateSubject.send(State(sections: sections, selectedDate: selectedDate))
 	}
 
 	private func makeFilteredSections(for date: Date) -> [TrackerCategorySectionViewData] {

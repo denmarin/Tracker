@@ -5,9 +5,11 @@
 //
 
 import UIKit
+import Combine
 
 final class TrackerTypeSelectionViewController: UIViewController {
 	private let viewModel: TrackerTypeSelectionViewModel
+	private var cancellables = Set<AnyCancellable>()
 
 	private let stack: UIStackView = {
 		let s = UIStackView()
@@ -70,17 +72,20 @@ final class TrackerTypeSelectionViewController: UIViewController {
 	}
 
 	private func bindViewModel() {
-		viewModel.onRouteToCreation = { [weak self] creationViewModel in
-			guard let self else { return }
-			let viewController: CreationViewController
-			switch creationViewModel.mode {
-			case .habit:
-				viewController = HabitCreationViewController(viewModel: creationViewModel)
-			case .irregularEvent:
-				viewController = IrregularEventCreationViewController(viewModel: creationViewModel)
+		viewModel.routeToCreationPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] creationViewModel in
+				guard let self else { return }
+				let viewController: CreationViewController
+				switch creationViewModel.mode {
+				case .habit:
+					viewController = HabitCreationViewController(viewModel: creationViewModel)
+				case .irregularEvent:
+					viewController = IrregularEventCreationViewController(viewModel: creationViewModel)
+				}
+				self.navigationController?.pushViewController(viewController, animated: true)
 			}
-			self.navigationController?.pushViewController(viewController, animated: true)
-		}
+			.store(in: &cancellables)
 	}
 
 	private func makePrimaryButton(title: String) -> UIButton {

@@ -4,12 +4,17 @@
 //
 
 import Foundation
+import Combine
 
 final class TrackerTypeSelectionViewModel {
-	var onRouteToCreation: ((CreationViewModel) -> Void)?
+	var routeToCreationPublisher: AnyPublisher<CreationViewModel, Never> {
+		routeToCreationSubject.eraseToAnyPublisher()
+	}
 
 	private let trackerCategoryStore: TrackerCategoryStore
 	private let onCreate: (Tracker, String) -> Void
+	private let routeToCreationSubject = PassthroughSubject<CreationViewModel, Never>()
+	private var cancellables = Set<AnyCancellable>()
 
 	init(
 		trackerCategoryStore: TrackerCategoryStore,
@@ -32,7 +37,11 @@ final class TrackerTypeSelectionViewModel {
 			mode: mode,
 			trackerCategoryStore: trackerCategoryStore
 		)
-		creationViewModel.onCreate = onCreate
-		onRouteToCreation?(creationViewModel)
+		creationViewModel.createTrackerPublisher
+			.sink { [onCreate] tracker, category in
+				onCreate(tracker, category)
+			}
+			.store(in: &cancellables)
+		routeToCreationSubject.send(creationViewModel)
 	}
 }

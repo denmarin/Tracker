@@ -5,12 +5,12 @@
 //
 
 import UIKit
+import Combine
 
 final class ScheduleSelectionViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-	var onDone: ((Set<Weekday>) -> Void)?
-
 	private let viewModel: ScheduleSelectionViewModel
 	private var rows: [ScheduleDayRowViewData] = []
+	private var cancellables = Set<AnyCancellable>()
 
 	private let tableView: UITableView = {
 		let tv = UITableView(frame: .zero, style: .insetGrouped)
@@ -106,15 +106,20 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 	}
 
 	private func bindViewModel() {
-		viewModel.onRowsChanged = { [weak self] rows in
-			self?.rows = rows
-			self?.tableView.reloadData()
-		}
+		viewModel.rowsPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] rows in
+				self?.rows = rows
+				self?.tableView.reloadData()
+			}
+			.store(in: &cancellables)
 
-		viewModel.onDoneSelection = { [weak self] selection in
-			self?.onDone?(selection)
-			self?.navigationController?.popViewController(animated: true)
-		}
+		viewModel.doneSelectionPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] _ in
+				self?.navigationController?.popViewController(animated: true)
+			}
+			.store(in: &cancellables)
 	}
 
 	override func viewDidLayoutSubviews() {

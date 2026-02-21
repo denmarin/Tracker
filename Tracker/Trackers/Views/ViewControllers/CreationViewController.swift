@@ -5,10 +5,12 @@
 //
 
 import UIKit
+import Combine
 
 class CreationViewController: UIViewController {
 	private let viewModel: CreationViewModel
 	private var state: CreationViewModel.State?
+	private var cancellables = Set<AnyCancellable>()
 
 	private lazy var scrollView = UIScrollView()
 	private lazy var contentView = UIView()
@@ -282,13 +284,19 @@ class CreationViewController: UIViewController {
 	}
 
 	private func bindViewModel() {
-		viewModel.onStateChanged = { [weak self] state in
-			self?.applyState(state)
-		}
+		viewModel.statePublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] state in
+				self?.applyState(state)
+			}
+			.store(in: &cancellables)
 
-		viewModel.onDismissRequested = { [weak self] in
-			self?.navigationController?.dismiss(animated: true)
-		}
+		viewModel.dismissPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] in
+				self?.navigationController?.dismiss(animated: true)
+			}
+			.store(in: &cancellables)
 	}
 
 	private func applyState(_ state: CreationViewModel.State) {
@@ -341,10 +349,14 @@ class CreationViewController: UIViewController {
 		let scheduleViewModel = ScheduleSelectionViewModel(
 			initialSelection: viewModel.currentScheduleSelection()
 		)
+		scheduleViewModel.doneSelectionPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] selection in
+				self?.viewModel.updateSchedule(selection)
+			}
+			.store(in: &cancellables)
+
 		let scheduleViewController = ScheduleSelectionViewController(viewModel: scheduleViewModel)
-		scheduleViewController.onDone = { [weak self] selection in
-			self?.viewModel.updateSchedule(selection)
-		}
 		navigationController?.pushViewController(scheduleViewController, animated: true)
 	}
 

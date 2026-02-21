@@ -5,10 +5,12 @@
 //
 
 import UIKit
+import Combine
 
 final class TrackersViewController: UIViewController {
 	private let viewModel: TrackersViewModel
 	private var sections: [TrackerCategorySectionViewData] = []
+	private var cancellables = Set<AnyCancellable>()
 
 	private let createTrackerButton: UIButton = {
 		let button = UIButton(type: .system)
@@ -203,21 +205,30 @@ final class TrackersViewController: UIViewController {
 	}
 
 	private func bindViewModel() {
-		viewModel.onStateChanged = { [weak self] state in
-			guard let self else { return }
-			self.sections = state.sections
-			self.datePicker.setDate(state.selectedDate, animated: false)
-			self.trackersCollectionView.reloadData()
-			self.updatePlaceholderVisibility(isEmpty: state.isEmpty)
-		}
+		viewModel.statePublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] state in
+				guard let self else { return }
+				self.sections = state.sections
+				self.datePicker.setDate(state.selectedDate, animated: false)
+				self.trackersCollectionView.reloadData()
+				self.updatePlaceholderVisibility(isEmpty: state.isEmpty)
+			}
+			.store(in: &cancellables)
 
-		viewModel.onRequestTrackerCreation = { [weak self] in
-			self?.presentTrackerTypeSelection()
-		}
+		viewModel.requestTrackerCreationPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] in
+				self?.presentTrackerTypeSelection()
+			}
+			.store(in: &cancellables)
 
-		viewModel.onAlert = { [weak self] alert in
-			self?.presentAlert(alert)
-		}
+		viewModel.alertPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] alert in
+				self?.presentAlert(alert)
+			}
+			.store(in: &cancellables)
 	}
 
 	private func presentTrackerTypeSelection() {

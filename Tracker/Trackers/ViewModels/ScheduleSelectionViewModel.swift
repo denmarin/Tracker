@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Combine
 
 struct ScheduleDayRowViewData {
 	let title: String
@@ -11,11 +12,17 @@ struct ScheduleDayRowViewData {
 }
 
 final class ScheduleSelectionViewModel {
-	var onRowsChanged: (([ScheduleDayRowViewData]) -> Void)?
-	var onDoneSelection: ((Set<Weekday>) -> Void)?
+	var rowsPublisher: AnyPublisher<[ScheduleDayRowViewData], Never> {
+		rowsSubject.eraseToAnyPublisher()
+	}
+	var doneSelectionPublisher: AnyPublisher<Set<Weekday>, Never> {
+		doneSelectionSubject.eraseToAnyPublisher()
+	}
 
 	private let daysOrder: [Weekday] = Weekday.ordered
 	private var selection: Set<Weekday>
+	private let rowsSubject = CurrentValueSubject<[ScheduleDayRowViewData], Never>([])
+	private let doneSelectionSubject = PassthroughSubject<Set<Weekday>, Never>()
 
 	init(initialSelection: Set<Weekday>) {
 		self.selection = initialSelection
@@ -26,7 +33,7 @@ final class ScheduleSelectionViewModel {
 	}
 
 	func didTapDone() {
-		onDoneSelection?(selection)
+		doneSelectionSubject.send(selection)
 	}
 
 	func didToggleDay(at index: Int) {
@@ -49,6 +56,6 @@ final class ScheduleSelectionViewModel {
 				isSelected: selection.contains(day)
 			)
 		}
-		onRowsChanged?(rows)
+		rowsSubject.send(rows)
 	}
 }

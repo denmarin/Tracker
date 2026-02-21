@@ -5,6 +5,7 @@
 
 
 import CoreData
+import Combine
 
 final class TrackerRecordStore: NSObject {
 	enum StoreError: Error {
@@ -23,8 +24,12 @@ final class TrackerRecordStore: NSObject {
 	}
 
 	var onDidUpdate: (() -> Void)?
+	var didUpdatePublisher: AnyPublisher<Void, Never> {
+		didUpdateSubject.eraseToAnyPublisher()
+	}
 
 	private let coreDataStack: CoreDataStack
+	private let didUpdateSubject = PassthroughSubject<Void, Never>()
 
 	private lazy var fetchedResultsController: NSFetchedResultsController<NSManagedObject> = {
 		let request = NSFetchRequest<NSManagedObject>(entityName: RecordEntity.name)
@@ -117,5 +122,6 @@ final class TrackerRecordStore: NSObject {
 extension TrackerRecordStore: NSFetchedResultsControllerDelegate {
 	func controllerDidChangeContent(_ controller: NSFetchedResultsController<any NSFetchRequestResult>) {
 		onDidUpdate?()
+		didUpdateSubject.send(())
 	}
 }

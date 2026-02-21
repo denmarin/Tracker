@@ -5,9 +5,11 @@
 //
 
 import UIKit
+import Combine
 
 final class StatisticsViewController: UIViewController {
 	private let viewModel: StatisticsViewModel
+	private var cancellables = Set<AnyCancellable>()
 
 	init(viewModel: StatisticsViewModel) {
 		self.viewModel = viewModel
@@ -27,8 +29,11 @@ final class StatisticsViewController: UIViewController {
 	}
 
 	private func bindViewModel() {
-		viewModel.onStateChanged = { [weak self] state in
-			self?.title = state.title
-		}
+		viewModel.statePublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] state in
+				self?.title = state.title
+			}
+			.store(in: &cancellables)
 	}
 }

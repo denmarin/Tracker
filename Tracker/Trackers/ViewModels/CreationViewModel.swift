@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import Combine
 
 enum TrackerCreationMode {
 	case habit
@@ -40,9 +41,15 @@ final class CreationViewModel {
 		let isCreateEnabled: Bool
 	}
 
-	var onStateChanged: ((State) -> Void)?
-	var onDismissRequested: (() -> Void)?
-	var onCreate: ((Tracker, String) -> Void)?
+	var statePublisher: AnyPublisher<State, Never> {
+		stateSubject.eraseToAnyPublisher()
+	}
+	var dismissPublisher: AnyPublisher<Void, Never> {
+		dismissSubject.eraseToAnyPublisher()
+	}
+	var createTrackerPublisher: AnyPublisher<(Tracker, String), Never> {
+		createTrackerSubject.eraseToAnyPublisher()
+	}
 
 	let mode: TrackerCreationMode
 	let emojis: [String] = [
@@ -54,6 +61,9 @@ final class CreationViewModel {
 
 	private let trackerCategoryStore: TrackerCategoryStore
 	private let maxTitleLength = 38
+	private let stateSubject: CurrentValueSubject<State, Never>
+	private let dismissSubject = PassthroughSubject<Void, Never>()
+	private let createTrackerSubject = PassthroughSubject<(Tracker, String), Never>()
 
 	private var title = ""
 	private var selectedCategoryTitle: String?
@@ -64,6 +74,18 @@ final class CreationViewModel {
 	init(mode: TrackerCreationMode, trackerCategoryStore: TrackerCategoryStore) {
 		self.mode = mode
 		self.trackerCategoryStore = trackerCategoryStore
+		self.stateSubject = CurrentValueSubject(
+			State(
+				screenTitle: mode.screenTitle,
+				title: "",
+				selectedCategoryTitle: nil,
+				selectedEmoji: nil,
+				selectedColorIndex: nil,
+				scheduleSummary: mode.requiresSchedule ? "" : nil,
+				isTitleTooLong: false,
+				isCreateEnabled: false
+			)
+		)
 	}
 
 	func viewDidLoad() {
@@ -71,13 +93,13 @@ final class CreationViewModel {
 	}
 
 	func didTapCancel() {
-		onDismissRequested?()
+		dismissSubject.send(())
 	}
 
 	func didTapCreate() {
 		guard let payload = makeCreationPayload() else { return }
-		onCreate?(payload.tracker, payload.categoryTitle)
-		onDismissRequested?()
+		createTrackerSubject.send((payload.tracker, payload.categoryTitle))
+		dismissSubject.send(())
 	}
 
 	func updateTitle(_ rawTitle: String) {
@@ -120,7 +142,7 @@ final class CreationViewModel {
 	}
 
 	private func emitState() {
-		onStateChanged?(
+		stateSubject.send(
 			State(
 				screenTitle: mode.screenTitle,
 				title: title,

@@ -5,6 +5,7 @@
 
 
 import CoreData
+import Combine
 
 struct TrackerCategoryItem: Equatable {
 	let objectID: NSManagedObjectID
@@ -35,9 +36,13 @@ final class TrackerCategoryStore: NSObject {
 	}
 
 	var onDidUpdate: (() -> Void)?
+	var didUpdatePublisher: AnyPublisher<Void, Never> {
+		didUpdateSubject.eraseToAnyPublisher()
+	}
 
 	private let coreDataStack: CoreDataStack
 	private var updateObservers: [UUID: () -> Void] = [:]
+	private let didUpdateSubject = PassthroughSubject<Void, Never>()
 
 	private lazy var fetchedResultsController: NSFetchedResultsController<NSManagedObject> = {
 		let request = NSFetchRequest<NSManagedObject>(entityName: Constants.entityName)
@@ -187,6 +192,7 @@ final class TrackerCategoryStore: NSObject {
 
 	private func notifyDidUpdate() {
 		onDidUpdate?()
+		didUpdateSubject.send(())
 		updateObservers.values.forEach { $0() }
 	}
 }
