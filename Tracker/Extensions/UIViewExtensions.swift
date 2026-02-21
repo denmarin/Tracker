@@ -1,9 +1,8 @@
-	//
-	//  UIViewExtensions.swift
-	//  Tracker
-	//
-	//  Created by Yury Semenyushkin on 13.01.26.
-	//
+//
+//  UIViewExtensions.swift
+//  Tracker
+//
+//
 
 import UIKit
 

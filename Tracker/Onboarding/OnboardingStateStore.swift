@@ -2,8 +2,7 @@
 //  OnboardingStateStore.swift
 //  Tracker
 //
-//  Created by Codex on 19.02.26.
-//
+
 
 import Foundation
 
