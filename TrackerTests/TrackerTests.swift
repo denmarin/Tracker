@@ -2,8 +2,7 @@
 //  TrackerTests.swift
 //  TrackerTests
 //
-//  Created by Yury Semenyushkin on 12.01.26.
-//
+
 
 import XCTest
 @testable import Tracker
