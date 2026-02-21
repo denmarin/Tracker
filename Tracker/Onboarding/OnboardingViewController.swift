@@ -121,17 +121,7 @@ final class OnboardingViewController: UIViewController {
 	}
 
 	private func handleActionButtonTap() {
-		let nextPageIndex = currentPageIndex + 1
-		guard nextPageIndex < pageViewControllers.count else {
-			onFinish?()
-			return
-		}
-
-		let nextVC = pageViewControllers[nextPageIndex]
-		currentPageIndex = nextPageIndex
-		pageControl.currentPage = currentPageIndex
-
-		pageViewController.setViewControllers([nextVC], direction: .forward, animated: true)
+		onFinish?()
 	}
 }
 
