@@ -10,6 +10,7 @@ import UIKit
 final class TrackersViewController: UIViewController {
 	private let trackerStore: TrackerStore
 	private let trackerRecordStore: TrackerRecordStore
+	private let trackerCategoryStore: TrackerCategoryStore
 
 	private var categories: [TrackerCategory] = []
 	private var filteredCategories: [TrackerCategory] = []
@@ -109,9 +110,14 @@ final class TrackersViewController: UIViewController {
 		return formatter
 	}()
 
-	init(trackerStore: TrackerStore, trackerRecordStore: TrackerRecordStore) {
+	init(
+		trackerStore: TrackerStore,
+		trackerRecordStore: TrackerRecordStore,
+		trackerCategoryStore: TrackerCategoryStore
+	) {
 		self.trackerStore = trackerStore
 		self.trackerRecordStore = trackerRecordStore
+		self.trackerCategoryStore = trackerCategoryStore
 		super.init(nibName: nil, bundle: nil)
 	}
 
@@ -217,6 +223,7 @@ final class TrackersViewController: UIViewController {
 	
 	private func didTapCreateTracker() {
 		let typeVC = TrackerTypeSelectionViewController()
+		typeVC.trackerCategoryStore = trackerCategoryStore
 		typeVC.onCreate = { [weak self] tracker, categoryTitle in
 			self?.addTracker(tracker, toCategoryWithTitle: categoryTitle)
 		}

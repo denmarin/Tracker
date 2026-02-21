@@ -10,6 +10,7 @@ import UIKit
 class CreationViewController: UIViewController {
 	
 	var onCreate: ((Tracker, String) -> Void)?
+	var trackerCategoryStore: TrackerCategoryStore?
 
 	private let maxTitleLength = 38
 	
@@ -111,6 +112,13 @@ class CreationViewController: UIViewController {
 	
 	private let categoryRow = SettingsRowButton()
 	
+	private var selectedCategoryTitleValue: String? {
+		didSet {
+			categoryRow.setValueText(selectedCategoryTitleValue)
+			updateCreateButtonState()
+		}
+	}
+	
 	private let emojiTitleLabel: UILabel = {
 		let l = UILabel()
 		l.text = "Emoji"
@@ -170,11 +178,25 @@ class CreationViewController: UIViewController {
 	func additionalRows() -> [SettingsRowButton] { [] }
 
 	func didTapCategory() {
-		presentNotImplementedAlert()
+		guard let categoryStore = resolveCategoryStore() else {
+			assertionFailure("TrackerCategoryStore is unavailable")
+			return
+		}
+
+		let viewModel = CategoryListViewModel(
+			categoryStore: categoryStore,
+			initiallySelectedCategoryTitle: selectedCategoryTitleValue
+		)
+		let categoryListViewController = CategoryListViewController(viewModel: viewModel)
+		categoryListViewController.onSelectedCategoryChanged = { [weak self] title in
+			self?.selectedCategoryTitleValue = title
+		}
+		navigationController?.pushViewController(categoryListViewController, animated: true)
 	}
 	
 	final func makeRows() -> [UIView] {
 		categoryRow.configure(title: "Категория")
+		categoryRow.setValueText(selectedCategoryTitleValue)
 		categoryRow.addAction(UIAction { [weak self] _ in
 			self?.didTapCategory()
 		}, for: .touchUpInside)
@@ -186,7 +208,7 @@ class CreationViewController: UIViewController {
 	func configureTitleFieldAppearance(_ field: UITextField) {}
 	
 	func isFormValid(title: String, emoji: String?, colorIndex: Int?) -> Bool {
-		!title.isEmpty && emoji != nil && colorIndex != nil
+		!title.isEmpty && selectedCategoryTitleValue != nil && emoji != nil && colorIndex != nil
 	}
 	
 	func makeTracker(title: String) -> Tracker {
@@ -203,7 +225,7 @@ class CreationViewController: UIViewController {
 		return Tracker(title: title, emoji: emoji, color: color, schedule: [])
 	}
 	
-	func selectedCategoryTitle() -> String { "Без категории" }
+	func selectedCategoryTitle() -> String { selectedCategoryTitleValue ?? "" }
 	
 		// MARK: - Lifecycle
 	
@@ -351,10 +373,16 @@ class CreationViewController: UIViewController {
 		createButton.setNeedsUpdateConfiguration()
 	}
 	
-	func presentNotImplementedAlert() {
-		let alert = UIAlertController(title: nil, message: "Экран будет реализован позже", preferredStyle: .alert)
-		alert.addAction(UIAlertAction(title: "OK", style: .default))
-		present(alert, animated: true)
+	private func resolveCategoryStore() -> TrackerCategoryStore? {
+		if let trackerCategoryStore {
+			return trackerCategoryStore
+		}
+
+		guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+			return nil
+		}
+
+		return TrackerCategoryStore(coreDataStack: appDelegate.coreDataStack)
 	}
 	
 	override func viewDidLayoutSubviews() {

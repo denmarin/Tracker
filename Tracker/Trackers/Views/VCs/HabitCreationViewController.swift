@@ -39,7 +39,7 @@ final class HabitCreationViewController: CreationViewController {
 	}
 
 	override func isFormValid(title: String, emoji: String?, colorIndex: Int?) -> Bool {
-		!title.isEmpty && !selectedSchedule.isEmpty && emoji != nil && colorIndex != nil
+		super.isFormValid(title: title, emoji: emoji, colorIndex: colorIndex) && !selectedSchedule.isEmpty
 	}
 
 	override func makeTracker(title: String) -> Tracker {

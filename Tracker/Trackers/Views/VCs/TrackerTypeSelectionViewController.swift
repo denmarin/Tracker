@@ -10,6 +10,7 @@ import UIKit
 final class TrackerTypeSelectionViewController: UIViewController {
     // Callback to bubble creation up to the presenter
     var onCreate: ((Tracker, String) -> Void)?
+	var trackerCategoryStore: TrackerCategoryStore?
 
     private let stack: UIStackView = {
         let s = UIStackView()
@@ -54,6 +55,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
 		habitButton.addAction(UIAction { [weak self] _ in
 			guard let self else { return }
 			let vc = HabitCreationViewController()
+			vc.trackerCategoryStore = self.trackerCategoryStore
 			vc.onCreate = { [weak self] tracker, category in
 				self?.onCreate?(tracker, category)
 			}
@@ -63,6 +65,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
 		irregularButton.addAction(UIAction { [weak self] _ in
 			guard let self else { return }
 			let vc = IrregularEventCreationViewController()
+			vc.trackerCategoryStore = self.trackerCategoryStore
 			vc.onCreate = { [weak self] tracker, category in
 				self?.onCreate?(tracker, category)
 			}
@@ -86,4 +89,3 @@ final class TrackerTypeSelectionViewController: UIViewController {
         return button
     }
 }
-

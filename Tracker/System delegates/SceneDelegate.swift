@@ -84,9 +84,11 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	// MARK: - Navigation Controllers
 
 	private func makeTrackersNavigationController() -> UINavigationController {
+		let trackerCategoryStore = makeTrackerCategoryStore()
 		let trackersViewController = TrackersViewController(
-			trackerStore: makeTrackerStore(),
-			trackerRecordStore: makeTrackerRecordStore()
+			trackerStore: makeTrackerStore(categoryStore: trackerCategoryStore),
+			trackerRecordStore: makeTrackerRecordStore(),
+			trackerCategoryStore: trackerCategoryStore
 		)
 
 		let navigationController = UINavigationController(rootViewController: trackersViewController)
@@ -111,10 +113,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 	// MARK: - Stores
 
-	private func makeTrackerStore() -> TrackerStore {
+	private func makeTrackerStore(categoryStore: TrackerCategoryStore) -> TrackerStore {
 		TrackerStore(
 			coreDataStack: coreDataStack,
-			categoryStore: makeTrackerCategoryStore()
+			categoryStore: categoryStore
 		)
 	}
 

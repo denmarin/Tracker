@@ -59,14 +59,15 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
         super.init(coder: coder)
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .ypWhite
-        navigationItem.title = "Расписание"
-        setupViews()
-        setupConstraints()
-        setupActions()
-    }
+	    override func viewDidLoad() {
+	        super.viewDidLoad()
+	        view.backgroundColor = .ypWhite
+	        navigationItem.title = "Расписание"
+	        navigationItem.hidesBackButton = true
+	        setupViews()
+	        setupConstraints()
+	        setupActions()
+	    }
 
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
@@ -160,4 +161,3 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
         return day.fullName
     }
 }
-
