@@ -2,6 +2,8 @@
 //  TrackerTypeSelectionViewController.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 21.02.26.
+//
 //
 
 import UIKit

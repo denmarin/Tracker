@@ -2,12 +2,14 @@
 //  OnboardingPageContentViewController.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 19.02.26.
+//
 //
 
 import UIKit
 
 final class OnboardingPageContentViewController: UIViewController {
-	private let viewModel: OnboardingPageContentViewModel
+	private let page: OnboardingPage
 
 	private let gradientView = OnboardingGradientView()
 
@@ -28,14 +30,14 @@ final class OnboardingPageContentViewController: UIViewController {
 		return label
 	}()
 
-	init(viewModel: OnboardingPageContentViewModel) {
-		self.viewModel = viewModel
+	init(page: OnboardingPage) {
+		self.page = page
 		super.init(nibName: nil, bundle: nil)
 	}
 
 	@available(*, unavailable)
 	required init?(coder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
+		nil
 	}
 
 	override func viewDidLoad() {
@@ -78,11 +80,11 @@ final class OnboardingPageContentViewController: UIViewController {
 
 	private func configureContent() {
 		gradientView.configure(
-			topColor: viewModel.state.fallbackTopColor,
-			bottomColor: viewModel.state.fallbackBottomColor
+			topColor: page.fallbackTopColor,
+			bottomColor: page.fallbackBottomColor
 		)
-		backgroundImageView.image = UIImage(named: viewModel.state.backgroundImageName)
-		titleLabel.text = viewModel.state.title
+		backgroundImageView.image = UIImage(named: page.backgroundImageName)
+		titleLabel.text = page.title
 	}
 }
 

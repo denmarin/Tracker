@@ -2,6 +2,8 @@
 //  OnboardingStateStore.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 19.02.26.
+//
 
 
 import Foundation

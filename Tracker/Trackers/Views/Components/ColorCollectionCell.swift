@@ -2,6 +2,8 @@
 //  ColorCollectionCell.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 01.02.26.
+//
 
 
 

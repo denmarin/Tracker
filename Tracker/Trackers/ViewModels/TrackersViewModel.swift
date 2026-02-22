@@ -2,6 +2,8 @@
 //  TrackersViewModel.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 21.02.26.
+//
 
 import Foundation
 import Combine
@@ -209,16 +211,14 @@ final class TrackersViewModel {
 		}
 
 		let createdDay = calendar.startOfDay(for: tracker.createdAt)
-		if selectedDay == createdDay {
-			return true
+		guard selectedDay >= createdDay else { return false }
+
+		// Нерегулярный трекер отображается до первой отметки.
+		// В день первой отметки он остается видимым, чтобы пользователь мог снять отметку.
+		let hasCompletionBeforeSelectedDay = completedTrackers.contains { record in
+			record.trackerId == tracker.id && record.date < selectedDay
 		}
-		if selectedDay > createdDay {
-			let wasCompletedOnCreationDay = completedTrackers.contains(
-				TrackerRecord(trackerId: tracker.id, date: createdDay)
-			)
-			return !wasCompletedOnCreationDay
-		}
-		return false
+		return !hasCompletionBeforeSelectedDay
 	}
 
 	private func completedCount(for trackerID: UUID) -> Int {

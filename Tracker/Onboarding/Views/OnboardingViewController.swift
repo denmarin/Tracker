@@ -2,6 +2,8 @@
 //  OnboardingViewController.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 19.02.26.
+//
 //
 
 import UIKit
@@ -25,7 +27,7 @@ final class OnboardingViewController: UIViewController {
 
 	private lazy var pageViewControllers: [OnboardingPageContentViewController] = {
 		viewModel.pages.map { page in
-			OnboardingPageContentViewController(viewModel: OnboardingPageContentViewModel(page: page))
+			OnboardingPageContentViewController(page: page)
 		}
 	}()
 

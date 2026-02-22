@@ -2,6 +2,8 @@
 //  AppDelegate.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 12.01.26.
+//
 
 
 import UIKit

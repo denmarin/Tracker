@@ -2,6 +2,8 @@
 //  UIColorTransformer.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 08.02.26.
+//
 
 
 import UIKit

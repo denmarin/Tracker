@@ -2,6 +2,8 @@
 //  CreationViewController.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 25.01.26.
+//
 //
 
 import UIKit
@@ -11,6 +13,7 @@ class CreationViewController: UIViewController {
 	private let viewModel: CreationViewModel
 	private var state: CreationViewModel.State?
 	private var cancellables = Set<AnyCancellable>()
+	private var scheduleSelectionCancellable: AnyCancellable?
 
 	private lazy var scrollView = UIScrollView()
 	private lazy var contentView = UIView()
@@ -349,12 +352,13 @@ class CreationViewController: UIViewController {
 		let scheduleViewModel = ScheduleSelectionViewModel(
 			initialSelection: viewModel.currentScheduleSelection()
 		)
-		scheduleViewModel.doneSelectionPublisher
+		scheduleSelectionCancellable = scheduleViewModel.doneSelectionPublisher
+			.prefix(1)
 			.receive(on: RunLoop.main)
 			.sink { [weak self] selection in
 				self?.viewModel.updateSchedule(selection)
+				self?.scheduleSelectionCancellable = nil
 			}
-			.store(in: &cancellables)
 
 		let scheduleViewController = ScheduleSelectionViewController(viewModel: scheduleViewModel)
 		navigationController?.pushViewController(scheduleViewController, animated: true)

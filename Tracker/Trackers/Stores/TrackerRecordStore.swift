@@ -2,6 +2,8 @@
 //  TrackerRecordStore.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 05.02.26.
+//
 
 
 import CoreData

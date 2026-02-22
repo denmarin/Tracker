@@ -2,6 +2,8 @@
 //  TrackerCategoryStore.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 05.02.26.
+//
 
 
 import CoreData
@@ -20,11 +22,11 @@ enum TrackerCategoryStoreError: LocalizedError {
 	var errorDescription: String? {
 		switch self {
 		case .emptyTitle:
-			return "Название категории не может быть пустым."
+			"Название категории не может быть пустым."
 		case .duplicateTitle:
-			return "Такая категория уже существует."
+			"Такая категория уже существует."
 		case .categoryNotFound:
-			return "Категория не найдена."
+			"Категория не найдена."
 		}
 	}
 }
@@ -71,8 +73,10 @@ final class TrackerCategoryStore: NSObject {
 
 	func category(forTitle title: String) -> TrackerCategoryItem? {
 		let normalizedTitle = normalizedCategoryTitle(title)
-		guard !normalizedTitle.isEmpty else { return nil }
-		guard let categoryObject = fetchCategoryObject(withTitle: normalizedTitle) else { return nil }
+		guard
+			!normalizedTitle.isEmpty,
+			let categoryObject = fetchCategoryObject(withTitle: normalizedTitle)
+		else { return nil }
 		return mapCategory(from: categoryObject)
 	}
 

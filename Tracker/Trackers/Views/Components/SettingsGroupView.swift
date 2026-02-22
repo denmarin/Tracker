@@ -2,6 +2,8 @@
 //  SettingsGroupView.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 30.01.26.
+//
 
 
 

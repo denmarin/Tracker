@@ -1,3 +1,10 @@
+//
+//  TrackerSectionHeaderView.swift
+//  Tracker
+//
+//  Created by Yury Semenyushkin on 23.01.26.
+//
+
 import UIKit
 
 final class TrackerSectionHeaderView: UICollectionReusableView {

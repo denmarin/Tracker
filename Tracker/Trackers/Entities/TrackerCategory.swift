@@ -2,6 +2,8 @@
 //  TrackerCategory.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 17.01.26.
+//
 
 
 import Foundation

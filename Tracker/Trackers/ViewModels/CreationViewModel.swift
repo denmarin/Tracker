@@ -2,6 +2,8 @@
 //  CreationViewModel.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 21.02.26.
+//
 
 import UIKit
 import Combine
@@ -157,11 +159,13 @@ final class CreationViewModel {
 	}
 
 	private func canCreateTracker() -> Bool {
-		guard title.count <= maxTitleLength else { return false }
-		guard !normalizedTitle.isEmpty else { return false }
-		guard selectedCategoryTitle != nil else { return false }
-		guard selectedEmoji != nil else { return false }
-		guard selectedColorIndex != nil else { return false }
+		guard
+			title.count <= maxTitleLength,
+			!normalizedTitle.isEmpty,
+			selectedCategoryTitle != nil,
+			selectedEmoji != nil,
+			selectedColorIndex != nil
+		else { return false }
 
 		if mode.requiresSchedule {
 			return !selectedSchedule.isEmpty

@@ -2,6 +2,8 @@
 //  CoreDataStack.swift
 //  Tracker
 //
+//  Created by Yury Semenyushkin on 04.02.26.
+//
 
 
 import CoreData
@@ -24,7 +26,8 @@ final class CoreDataStack {
 	func load() {
 		persistentContainer.loadPersistentStores { _, error in
 			if let error = error as NSError? {
-				fatalError("Unresolved error \(error), \(error.userInfo)")
+				assertionFailure("Failed to load persistent stores: \(error), \(error.userInfo)")
+				NSLog("CoreData load error: %@ %@", error.localizedDescription, error.userInfo.description)
 			}
 		}
 	}
@@ -36,7 +39,9 @@ final class CoreDataStack {
 			try context.save()
 		} catch {
 			let nserror = error as NSError
-			fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+			context.rollback()
+			assertionFailure("Failed to save context: \(nserror), \(nserror.userInfo)")
+			NSLog("CoreData save error: %@ %@", nserror.localizedDescription, nserror.userInfo.description)
 		}
 	}
 }
