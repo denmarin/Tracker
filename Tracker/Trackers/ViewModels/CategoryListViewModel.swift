@@ -163,6 +163,6 @@ final class CategoryListViewModel {
 			return message
 		}
 
-		return "Не удалось выполнить операцию с категорией."
+		return String(localized: "category.error.operationFailed")
 	}
 }

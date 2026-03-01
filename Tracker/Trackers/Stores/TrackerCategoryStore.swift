@@ -22,11 +22,11 @@ enum TrackerCategoryStoreError: LocalizedError {
 	var errorDescription: String? {
 		switch self {
 		case .emptyTitle:
-			"Название категории не может быть пустым."
+			String(localized: "category.error.empty")
 		case .duplicateTitle:
-			"Такая категория уже существует."
+			String(localized: "category.error.duplicate")
 		case .categoryNotFound:
-			"Категория не найдена."
+			String(localized: "category.error.notFound")
 		}
 	}
 }

@@ -41,7 +41,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 	private let doneButton: UIButton = {
 		let b = UIButton(type: .system)
 		var config = UIButton.Configuration.filled()
-		config.title = "Готово"
+		config.title = String(localized: "common.done")
 		config.baseBackgroundColor = .ypBlack
 		config.baseForegroundColor = .ypWhite
 		config.cornerStyle = .large
@@ -63,7 +63,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .ypWhite
-		navigationItem.title = "Расписание"
+		navigationItem.title = String(localized: "schedule.title")
 		navigationItem.hidesBackButton = true
 		setupViews()
 		setupConstraints()

@@ -36,7 +36,7 @@ final class TrackersViewModel {
 		var title: String? {
 			switch self {
 			case .futureDateNotAllowed:
-				return "Нельзя отметить будущее"
+				return String(localized: "tracker.alert.futureDate.title")
 			case .operationFailed:
 				return nil
 			}
@@ -45,7 +45,7 @@ final class TrackersViewModel {
 		var message: String {
 			switch self {
 			case .futureDateNotAllowed:
-				return "Выберите сегодняшнюю или прошедшую дату."
+				return String(localized: "tracker.alert.futureDate.message")
 			case .operationFailed(let message):
 				return message
 			}
@@ -127,7 +127,7 @@ final class TrackersViewModel {
 			}
 		} catch {
 			assertionFailure("Failed to update tracker completion: \(error)")
-			alertSubject.send(.operationFailed(message: "Не удалось обновить отметку трекера."))
+			alertSubject.send(.operationFailed(message: String(localized: "tracker.alert.updateCompletionFailed")))
 		}
 	}
 
@@ -136,7 +136,7 @@ final class TrackersViewModel {
 			try trackerStore.add(tracker, toCategoryWithTitle: title)
 		} catch {
 			assertionFailure("Failed to add tracker: \(error)")
-			alertSubject.send(.operationFailed(message: "Не удалось создать трекер."))
+			alertSubject.send(.operationFailed(message: String(localized: "tracker.alert.createFailed")))
 		}
 	}
 

@@ -34,25 +34,25 @@ enum Weekday: Int, CaseIterable, Hashable {
 
 	var fullName: String {
 		switch self {
-		case .monday: "Понедельник"
-		case .tuesday: "Вторник"
-		case .wednesday: "Среда"
-		case .thursday: "Четверг"
-		case .friday: "Пятница"
-		case .saturday: "Суббота"
-		case .sunday: "Воскресенье"
+		case .monday: String(localized: "weekday.monday.full")
+		case .tuesday: String(localized: "weekday.tuesday.full")
+		case .wednesday: String(localized: "weekday.wednesday.full")
+		case .thursday: String(localized: "weekday.thursday.full")
+		case .friday: String(localized: "weekday.friday.full")
+		case .saturday: String(localized: "weekday.saturday.full")
+		case .sunday: String(localized: "weekday.sunday.full")
 		}
 	}
 
     var shortName: String {
         switch self {
-        case .monday: "Пн"
-        case .tuesday: "Вт"
-        case .wednesday: "Ср"
-        case .thursday: "Чт"
-        case .friday: "Пт"
-        case .saturday: "Сб"
-        case .sunday: "Вс"
+        case .monday: String(localized: "weekday.monday.short")
+        case .tuesday: String(localized: "weekday.tuesday.short")
+        case .wednesday: String(localized: "weekday.wednesday.short")
+        case .thursday: String(localized: "weekday.thursday.short")
+        case .friday: String(localized: "weekday.friday.short")
+        case .saturday: String(localized: "weekday.saturday.short")
+        case .sunday: String(localized: "weekday.sunday.short")
         }
     }
 }

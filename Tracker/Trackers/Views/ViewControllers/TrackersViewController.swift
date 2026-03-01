@@ -45,7 +45,7 @@ final class TrackersViewController: UIViewController {
 	private let titleLabel: UILabel = {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 34, weight: .bold)
-		label.text = "Трекеры"
+		label.text = String(localized: "trackers.title")
 		label.textAlignment = .left
 		label.translatesAutoresizingMaskIntoConstraints = false
 		return label
@@ -54,7 +54,7 @@ final class TrackersViewController: UIViewController {
 	private let searchBar: UISearchBar = {
 		let sb = UISearchBar()
 		sb.searchBarStyle = .minimal
-		sb.placeholder = "Поиск"
+		sb.placeholder = String(localized: "trackers.search.placeholder")
 		sb.translatesAutoresizingMaskIntoConstraints = false
 		return sb
 	}()
@@ -87,7 +87,7 @@ final class TrackersViewController: UIViewController {
 
 	private let placeholderLabel: UILabel = {
 		let label = UILabel()
-		label.text = "Что будем отслеживать?"
+		label.text = String(localized: "trackers.placeholder")
 		label.font = .systemFont(ofSize: 12, weight: .medium)
 		label.textColor = .ypBlack
 		label.textAlignment = .center
@@ -263,7 +263,7 @@ final class TrackersViewController: UIViewController {
 			message: alert.message,
 			preferredStyle: .alert
 		)
-		vc.addAction(UIAlertAction(title: "OK", style: .default))
+		vc.addAction(UIAlertAction(title: String(localized: "common.ok"), style: .default))
 		present(vc, animated: true)
 	}
 }

@@ -97,7 +97,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 		let navigationController = UINavigationController(rootViewController: trackersViewController)
 		navigationController.tabBarItem = UITabBarItem(
-			title: "Трекеры",
+			title: String(localized: "tab.trackers"),
 			image: UIImage(systemName: "record.circle.fill"),
 			selectedImage: UIImage(systemName: "record.circle.fill")
 		)
@@ -108,7 +108,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 		let statisticsViewController = StatisticsViewController(viewModel: StatisticsViewModel())
 		let navigationController = UINavigationController(rootViewController: statisticsViewController)
 		navigationController.tabBarItem = UITabBarItem(
-			title: "Статистика",
+			title: String(localized: "tab.statistics"),
 			image: UIImage(systemName: "hare.fill"),
 			selectedImage: UIImage(systemName: "hare.fill")
 		)

@@ -41,7 +41,7 @@ final class CategoryEditorViewController: UIViewController {
 	private let doneButton: UIButton = {
 		let button = UIButton(type: .system)
 		var config = UIButton.Configuration.filled()
-		config.title = "Готово"
+		config.title = String(localized: "common.done")
 		config.baseBackgroundColor = .ypGray
 		config.baseForegroundColor = .ypWhite
 		config.background.cornerRadius = 16
@@ -114,7 +114,7 @@ final class CategoryEditorViewController: UIViewController {
 
 	private func setupActions() {
 		titleTextField.delegate = self
-		titleTextField.placeholder = "Введите название категории"
+		titleTextField.placeholder = String(localized: "category.editor.placeholder")
 		titleTextField.addAction(UIAction { [weak self] _ in
 			self?.viewModel.updateInputTitle(self?.titleTextField.text ?? "")
 		}, for: .editingChanged)
@@ -155,7 +155,7 @@ final class CategoryEditorViewController: UIViewController {
 
 	func presentError(message: String) {
 		let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-		alert.addAction(UIAlertAction(title: "OK", style: .default))
+		alert.addAction(UIAlertAction(title: String(localized: "common.ok"), style: .default))
 		present(alert, animated: true)
 	}
 }

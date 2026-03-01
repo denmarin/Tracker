@@ -108,7 +108,7 @@ final class TrackerCell: UICollectionViewCell {
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
-        countLabel.text = "\(completedCount) \(russianDayPlural(completedCount))"
+        countLabel.text = "\(completedCount) \(localizedDayWord(for: completedCount))"
 
         let imageName = isCompleted ? "checkmark" : "plus"
         let symbolConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .bold)
@@ -119,12 +119,23 @@ final class TrackerCell: UICollectionViewCell {
         contentView.alpha = 1
     }
 
-    private func russianDayPlural(_ count: Int) -> String {
-        let mod10 = count % 10
-        let mod100 = count % 100
-        if mod10 == 1 && mod100 != 11 { return "день" }
-        if (2...4).contains(mod10) && !(12...14).contains(mod100) { return "дня" }
-        return "дней"
+    private func localizedDayWord(for count: Int) -> String {
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+        if languageCode == "ru" {
+            let mod10 = count % 10
+            let mod100 = count % 100
+            if mod10 == 1 && mod100 != 11 {
+                return String(localized: "tracker.dayWord.one")
+            }
+            if (2...4).contains(mod10) && !(12...14).contains(mod100) {
+                return String(localized: "tracker.dayWord.few")
+            }
+            return String(localized: "tracker.dayWord.many")
+        }
+
+        return count == 1
+            ? String(localized: "tracker.dayWord.one")
+            : String(localized: "tracker.dayWord.other")
     }
 
     @available(*, unavailable)

@@ -21,8 +21,8 @@ final class TrackerTypeSelectionViewController: UIViewController {
 		return s
 	}()
 
-	private lazy var habitButton: UIButton = makePrimaryButton(title: "Привычка")
-	private lazy var irregularButton: UIButton = makePrimaryButton(title: "Нерегулярное событие")
+	private lazy var habitButton: UIButton = makePrimaryButton(title: String(localized: "tracker.type.habit"))
+	private lazy var irregularButton: UIButton = makePrimaryButton(title: String(localized: "tracker.type.irregular"))
 
 	init(viewModel: TrackerTypeSelectionViewModel) {
 		self.viewModel = viewModel
@@ -37,7 +37,7 @@ final class TrackerTypeSelectionViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .ypWhite
-		navigationItem.title = "Создание трекера"
+		navigationItem.title = String(localized: "tracker.type.selection.title")
 		setupViews()
 		setupConstraints()
 		setupActions()

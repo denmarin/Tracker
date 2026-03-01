@@ -15,9 +15,9 @@ enum TrackerCreationMode {
 	var screenTitle: String {
 		switch self {
 		case .habit:
-			return "Новая привычка"
+			return String(localized: "tracker.creation.habit.title")
 		case .irregularEvent:
-			return "Новое нерегулярное событие"
+			return String(localized: "tracker.creation.irregular.title")
 		}
 	}
 
@@ -197,7 +197,7 @@ final class CreationViewModel {
 
 	private func scheduleSummary(from selection: Set<Weekday>) -> String {
 		if selection.isEmpty { return "" }
-		if selection.count == Weekday.allCases.count { return "Каждый день" }
+		if selection.count == Weekday.allCases.count { return String(localized: "schedule.everyDay") }
 		return Weekday.ordered
 			.filter { selection.contains($0) }
 			.map(\.shortName)

@@ -16,7 +16,7 @@ final class CategoryListViewController: UIViewController {
 
 	private let titleLabel: UILabel = {
 		let label = UILabel()
-		label.text = "Категория"
+		label.text = String(localized: "category.list.title")
 		label.font = .systemFont(ofSize: 16, weight: .medium)
 		label.textColor = .ypBlack
 		label.textAlignment = .center
@@ -44,7 +44,7 @@ final class CategoryListViewController: UIViewController {
 
 	private let placeholderLabel: UILabel = {
 		let label = UILabel()
-		label.text = "Привычки и события можно\nобъединить по смыслу"
+		label.text = String(localized: "category.list.placeholder")
 		label.font = .systemFont(ofSize: 12, weight: .medium)
 		label.textColor = .ypBlack
 		label.textAlignment = .center
@@ -65,7 +65,7 @@ final class CategoryListViewController: UIViewController {
 	private let addCategoryButton: UIButton = {
 		let button = UIButton(type: .system)
 		var config = UIButton.Configuration.filled()
-		config.title = "Добавить категорию"
+		config.title = String(localized: "category.list.add")
 		config.baseBackgroundColor = .ypBlack
 		config.baseForegroundColor = .ypWhite
 		config.background.cornerRadius = 16
@@ -188,7 +188,7 @@ final class CategoryListViewController: UIViewController {
 
 	private func presentCategoryCreation() {
 		let editor = CategoryEditorViewController(
-			screenTitle: "Новая категория",
+			screenTitle: String(localized: "category.editor.new"),
 			initialTitle: nil
 		)
 		editor.onDone = { [weak self, weak editor] title in
@@ -204,7 +204,7 @@ final class CategoryListViewController: UIViewController {
 
 	private func presentCategoryEditing(category: TrackerCategoryItem) {
 		let editor = CategoryEditorViewController(
-			screenTitle: "Редактирование категории",
+			screenTitle: String(localized: "category.editor.edit"),
 			initialTitle: category.title
 		)
 		editor.onDone = { [weak self, weak editor] title in
@@ -221,17 +221,17 @@ final class CategoryListViewController: UIViewController {
 	private func presentDeleteConfirmation() {
 		let alert = UIAlertController(
 			title: nil,
-			message: "Эта категория точно не нужна?",
+			message: String(localized: "category.delete.confirm"),
 			preferredStyle: .actionSheet
 		)
 
-		let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+		let deleteAction = UIAlertAction(title: String(localized: "category.delete.action"), style: .destructive) { [weak self] _ in
 			guard let self else { return }
 			if let errorMessage = self.viewModel.confirmCategoryDeletion() {
 				self.presentError(message: errorMessage)
 			}
 		}
-		let cancelAction = UIAlertAction(title: "Отменить", style: .cancel) { [weak self] _ in
+		let cancelAction = UIAlertAction(title: String(localized: "common.cancel"), style: .cancel) { [weak self] _ in
 			self?.viewModel.cancelCategoryDeletion()
 		}
 
@@ -249,7 +249,7 @@ final class CategoryListViewController: UIViewController {
 
 	private func presentError(message: String) {
 		let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-		alert.addAction(UIAlertAction(title: "OK", style: .default))
+		alert.addAction(UIAlertAction(title: String(localized: "common.ok"), style: .default))
 		present(alert, animated: true)
 	}
 }
@@ -287,11 +287,11 @@ extension CategoryListViewController: UITableViewDelegate {
 		point: CGPoint
 	) -> UIContextMenuConfiguration? {
 		UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
-			let editAction = UIAction(title: "Редактировать") { _ in
+			let editAction = UIAction(title: String(localized: "category.edit.action")) { _ in
 				self?.viewModel.didTapEditCategory(at: indexPath.row)
 			}
 
-			let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
+			let deleteAction = UIAction(title: String(localized: "category.delete.action"), attributes: .destructive) { _ in
 				self?.viewModel.didTapDeleteCategory(at: indexPath.row)
 			}
 

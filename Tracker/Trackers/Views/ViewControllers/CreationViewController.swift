@@ -46,7 +46,7 @@ class CreationViewController: UIViewController {
 
 	private let titleField: UITextField = {
 		let tf = UITextField()
-		tf.placeholder = "Введите название трекера"
+		tf.placeholder = String(localized: "tracker.creation.name.placeholder")
 		tf.backgroundColor = .ypBackground
 		tf.layer.cornerRadius = 16
 		tf.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
@@ -59,7 +59,7 @@ class CreationViewController: UIViewController {
 
 	private let titleErrorLabel: UILabel = {
 		let label = UILabel()
-		label.text = "Ограничение 38 символов"
+		label.text = String(localized: "tracker.creation.name.limit")
 		label.textColor = .ypRed
 		label.font = .systemFont(ofSize: 17, weight: .regular)
 		label.textAlignment = .center
@@ -70,7 +70,7 @@ class CreationViewController: UIViewController {
 	private let cancelButton: UIButton = {
 		let b = UIButton(type: .system)
 		var config = UIButton.Configuration.bordered()
-		config.title = "Отменить"
+		config.title = String(localized: "common.cancel")
 		config.baseForegroundColor = .ypRed
 		config.baseBackgroundColor = .ypWhite
 		config.background.backgroundColor = .ypWhite
@@ -85,7 +85,7 @@ class CreationViewController: UIViewController {
 	private let createButton: UIButton = {
 		let b = UIButton(type: .system)
 		var config = UIButton.Configuration.filled()
-		config.title = "Создать"
+		config.title = String(localized: "common.create")
 		config.background.cornerRadius = 16
 		config.baseBackgroundColor = .ypGray
 		config.baseForegroundColor = .ypWhite
@@ -104,7 +104,7 @@ class CreationViewController: UIViewController {
 
 	private let emojiTitleLabel: UILabel = {
 		let l = UILabel()
-		l.text = "Emoji"
+		l.text = String(localized: "tracker.creation.emoji.section")
 		l.font = .systemFont(ofSize: 19, weight: .bold)
 		l.textColor = .ypBlack
 		return l
@@ -112,7 +112,7 @@ class CreationViewController: UIViewController {
 
 	private let colorTitleLabel: UILabel = {
 		let l = UILabel()
-		l.text = "Цвет"
+		l.text = String(localized: "tracker.creation.color.section")
 		l.font = .systemFont(ofSize: 19, weight: .bold)
 		l.textColor = .ypBlack
 		return l
@@ -213,13 +213,13 @@ class CreationViewController: UIViewController {
 	}
 
 	private func configureSettingsRows() {
-		categoryRow.configure(title: "Категория")
+		categoryRow.configure(title: String(localized: "tracker.creation.category.row"))
 		categoryRow.addAction(UIAction { [weak self] _ in
 			self?.didTapCategory()
 		}, for: .touchUpInside)
 		categoryRow.heightAnchor.constraint(equalToConstant: 75).isActive = true
 
-		scheduleRow.configure(title: "Расписание")
+		scheduleRow.configure(title: String(localized: "tracker.creation.schedule.row"))
 		scheduleRow.addAction(UIAction { [weak self] _ in
 			self?.didTapSchedule()
 		}, for: .touchUpInside)

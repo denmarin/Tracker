@@ -45,7 +45,7 @@ final class OnboardingViewController: UIViewController {
 	private let actionButton: UIButton = {
 		let button = UIButton(type: .system)
 		var config = UIButton.Configuration.filled()
-		config.title = "Вот это технологии!"
+		config.title = String(localized: "onboarding.actionButton")
 		config.baseBackgroundColor = .ypBlack
 		config.baseForegroundColor = .ypWhite
 		config.background.cornerRadius = 16

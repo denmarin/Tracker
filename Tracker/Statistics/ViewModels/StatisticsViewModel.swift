@@ -18,10 +18,10 @@ final class StatisticsViewModel {
 	}
 
 	private let stateSubject = CurrentValueSubject<State, Never>(
-		State(title: "Статистика")
+		State(title: String(localized: "statistics.title"))
 	)
 
 	func viewDidLoad() {
-		stateSubject.send(State(title: "Статистика"))
+		stateSubject.send(State(title: String(localized: "statistics.title")))
 	}
 }

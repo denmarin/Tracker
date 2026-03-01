@@ -50,13 +50,13 @@ final class OnboardingViewModel {
 
 	private static let defaultPages: [OnboardingPage] = [
 		OnboardingPage(
-			title: "Отслеживайте только\nто, что хотите",
+			title: String(localized: "onboarding.page.first.title"),
 			backgroundImageName: "OnboardingBackgroundBlue",
 			fallbackTopColor: OnboardingPalette.blueTop,
 			fallbackBottomColor: OnboardingPalette.blueBottom
 		),
 		OnboardingPage(
-			title: "Даже если это\nне литры воды и йога",
+			title: String(localized: "onboarding.page.second.title"),
 			backgroundImageName: "OnboardingBackgroundRed",
 			fallbackTopColor: OnboardingPalette.redTop,
 			fallbackBottomColor: OnboardingPalette.redBottom
