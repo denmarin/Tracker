@@ -139,6 +139,7 @@ final class TrackersViewController: UIViewController {
 		view.addSubview(createTrackerButton)
 		view.addSubview(datePicker)
 		view.addSubview(titleLabel)
+		searchBar.delegate = self
 		view.addSubview(searchBar)
 		view.addSubview(trackersCollectionView)
 
@@ -354,5 +355,15 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 		minimumLineSpacingForSectionAt section: Int
 	) -> CGFloat {
 		12
+	}
+}
+
+extension TrackersViewController: UISearchBarDelegate {
+	func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+		viewModel.didChangeSearchQuery(searchText)
+	}
+
+	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+		view.endEditing(true)
 	}
 }

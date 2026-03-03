@@ -71,10 +71,13 @@ final class TrackersViewModel {
 	private let requestTrackerCreationSubject = PassthroughSubject<Void, Never>()
 	private let alertSubject = PassthroughSubject<Alert, Never>()
 	private let selectedDateSubject: CurrentValueSubject<Date, Never>
+	private let searchQuerySubject: CurrentValueSubject<String, Never>
 
 	private var categories: [TrackerCategory] = []
+	private var visibleCategories: [TrackerCategory] = []
 	private var completedTrackers: [TrackerRecord] = []
 	private var selectedDate: Date
+	private var searchQuery = ""
 	private var hasBoundStoreUpdates = false
 	private var cancellables = Set<AnyCancellable>()
 
@@ -92,6 +95,7 @@ final class TrackersViewModel {
 		self.calendar = calendar
 		self.selectedDate = normalizedInitialDate
 		self.selectedDateSubject = CurrentValueSubject(normalizedInitialDate)
+		self.searchQuerySubject = CurrentValueSubject("")
 		self.stateSubject = CurrentValueSubject(
 			State(sections: [], selectedDate: normalizedInitialDate)
 		)
@@ -110,6 +114,12 @@ final class TrackersViewModel {
 		let normalizedDate = calendar.startOfDay(for: date)
 		guard normalizedDate != selectedDate else { return }
 		selectedDateSubject.send(normalizedDate)
+	}
+
+	func didChangeSearchQuery(_ query: String) {
+		let normalizedQuery = normalizedSearchQuery(query)
+		guard normalizedQuery != searchQuery else { return }
+		searchQuerySubject.send(normalizedQuery)
 	}
 
 	func didTapToggleCompletion(for trackerID: UUID) {
@@ -171,6 +181,15 @@ final class TrackersViewModel {
 				self.emitState()
 			}
 			.store(in: &cancellables)
+
+		searchQuerySubject
+			.removeDuplicates()
+			.sink { [weak self] query in
+				guard let self else { return }
+				self.searchQuery = query
+				self.emitState()
+			}
+			.store(in: &cancellables)
 	}
 
 	private func reloadDataFromStores() {
@@ -180,27 +199,37 @@ final class TrackersViewModel {
 	}
 
 	private func emitState() {
-		let sections = makeFilteredSections(for: selectedDate)
+		visibleCategories = makeVisibleCategories(for: selectedDate, searchQuery: searchQuery)
+		let sections = makeSections(from: visibleCategories, for: selectedDate)
 		stateSubject.send(State(sections: sections, selectedDate: selectedDate))
 	}
 
-	private func makeFilteredSections(for date: Date) -> [TrackerCategorySectionViewData] {
-		let weekday = Weekday.from(date)
+	private func makeVisibleCategories(for date: Date, searchQuery: String) -> [TrackerCategory] {
+		let weekday = Weekday.from(date, calendar: calendar)
 
 		return categories.compactMap { category in
-			let items = category.trackers.compactMap { tracker -> TrackerItemViewData? in
-				guard shouldDisplayTracker(tracker, on: date, weekday: weekday) else {
-					return nil
-				}
+			let trackers = category.trackers.filter { tracker in
+				shouldDisplayTracker(tracker, on: date, weekday: weekday)
+				&& matchesSearchQuery(tracker.title, query: searchQuery)
+			}
 
-				return TrackerItemViewData(
+			guard !trackers.isEmpty else { return nil }
+			return TrackerCategory(title: category.title, trackers: trackers)
+		}
+	}
+
+	private func makeSections(
+		from categories: [TrackerCategory],
+		for date: Date
+	) -> [TrackerCategorySectionViewData] {
+		categories.map { category in
+			let items = category.trackers.map { tracker in
+				TrackerItemViewData(
 					tracker: tracker,
 					completedCount: completedCount(for: tracker.id),
 					isCompletedOnSelectedDate: isTrackerCompleted(trackerID: tracker.id, on: date)
 				)
 			}
-
-			guard !items.isEmpty else { return nil }
 			return TrackerCategorySectionViewData(title: category.title, items: items)
 		}
 	}
@@ -219,6 +248,15 @@ final class TrackersViewModel {
 			record.trackerId == tracker.id && record.date < selectedDay
 		}
 		return !hasCompletionBeforeSelectedDay
+	}
+
+	private func matchesSearchQuery(_ trackerTitle: String, query: String) -> Bool {
+		guard !query.isEmpty else { return true }
+		return trackerTitle.localizedCaseInsensitiveContains(query)
+	}
+
+	private func normalizedSearchQuery(_ query: String) -> String {
+		query.trimmingCharacters(in: .whitespacesAndNewlines)
 	}
 
 	private func completedCount(for trackerID: UUID) -> Int {
