@@ -20,12 +20,18 @@ struct TrackerCategorySectionViewData {
 }
 
 final class TrackersViewModel {
+	enum EmptyState {
+		case noTrackers
+		case noSearchResults
+	}
+
 	struct State {
 		let sections: [TrackerCategorySectionViewData]
 		let selectedDate: Date
+		let emptyState: EmptyState?
 
 		var isEmpty: Bool {
-			sections.isEmpty
+			emptyState != nil
 		}
 	}
 
@@ -97,7 +103,11 @@ final class TrackersViewModel {
 		self.selectedDateSubject = CurrentValueSubject(normalizedInitialDate)
 		self.searchQuerySubject = CurrentValueSubject("")
 		self.stateSubject = CurrentValueSubject(
-			State(sections: [], selectedDate: normalizedInitialDate)
+			State(
+				sections: [],
+				selectedDate: normalizedInitialDate,
+				emptyState: .noTrackers
+			)
 		)
 	}
 
@@ -240,7 +250,16 @@ final class TrackersViewModel {
 	private func emitState() {
 		visibleCategories = makeVisibleCategories(for: selectedDate, searchQuery: searchQuery)
 		let sections = makeSections(from: visibleCategories, for: selectedDate)
-		stateSubject.send(State(sections: sections, selectedDate: selectedDate))
+		let emptyState: EmptyState? = sections.isEmpty
+		? (searchQuery.isEmpty ? .noTrackers : .noSearchResults)
+		: nil
+		stateSubject.send(
+			State(
+				sections: sections,
+				selectedDate: selectedDate,
+				emptyState: emptyState
+			)
+		)
 	}
 
 	private func makeVisibleCategories(for date: Date, searchQuery: String) -> [TrackerCategory] {

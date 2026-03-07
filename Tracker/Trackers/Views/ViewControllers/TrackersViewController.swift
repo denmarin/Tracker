@@ -216,7 +216,7 @@ final class TrackersViewController: UIViewController {
 				self.sections = state.sections
 				self.datePicker.setDate(state.selectedDate, animated: false)
 				self.trackersCollectionView.reloadData()
-				self.updatePlaceholderVisibility(isEmpty: state.isEmpty)
+				self.updatePlaceholder(with: state.emptyState)
 			}
 			.store(in: &cancellables)
 
@@ -308,9 +308,24 @@ final class TrackersViewController: UIViewController {
 		present(alert, animated: true)
 	}
 
-	private func updatePlaceholderVisibility(isEmpty: Bool) {
-		placeholderStack.isHidden = !isEmpty
-		trackersCollectionView.isHidden = isEmpty
+	private func updatePlaceholder(with emptyState: TrackersViewModel.EmptyState?) {
+		guard let emptyState else {
+			placeholderStack.isHidden = true
+			trackersCollectionView.isHidden = false
+			return
+		}
+
+		placeholderStack.isHidden = false
+		trackersCollectionView.isHidden = true
+
+		switch emptyState {
+		case .noTrackers:
+			placeholderImageView.image = UIImage(resource: .trackersPlaceholder)
+			placeholderLabel.text = String(localized: "trackers.placeholder")
+		case .noSearchResults:
+			placeholderImageView.image = UIImage(resource: .trackersSearchPlaceholder)
+			placeholderLabel.text = String(localized: "trackers.search.empty")
+		}
 	}
 
 	private func presentAlert(_ alert: TrackersViewModel.Alert) {
