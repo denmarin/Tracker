@@ -45,6 +45,15 @@ final class TrackerCell: UICollectionViewCell {
         return label
     }()
 
+    private let pinImageView: UIImageView = {
+        let config = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+        let imageView = UIImageView(image: UIImage(systemName: "pin.fill", withConfiguration: config))
+        imageView.tintColor = .ypWhite
+        imageView.isHidden = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+
     private let countLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
@@ -63,11 +72,14 @@ final class TrackerCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
 
         contentView.addSubview(cardView)
         cardView.addSubview(emojiBadgeView)
         emojiBadgeView.addSubview(emojiLabel)
         cardView.addSubview(titleLabel)
+        cardView.addSubview(pinImageView)
 
         contentView.addSubview(countLabel)
         contentView.addSubview(toggleButton)
@@ -90,6 +102,11 @@ final class TrackerCell: UICollectionViewCell {
             titleLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
             titleLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
 
+            pinImageView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
+            pinImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
+            pinImageView.widthAnchor.constraint(equalToConstant: 12),
+            pinImageView.heightAnchor.constraint(equalToConstant: 12),
+
             countLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
             countLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
 
@@ -104,10 +121,40 @@ final class TrackerCell: UICollectionViewCell {
         }, for: .touchUpInside)
     }
 
+    func makeContextMenuPreview(in container: UIView) -> UITargetedPreview {
+        let snapshotView = cardView.snapshotView(afterScreenUpdates: false) ?? UIView(frame: cardView.bounds)
+        snapshotView.frame = cardView.bounds
+        snapshotView.layer.cornerRadius = cardView.layer.cornerRadius
+        snapshotView.layer.masksToBounds = true
+        if let cardBackgroundColor = cardView.backgroundColor {
+            snapshotView.backgroundColor = cardBackgroundColor
+        }
+
+        let parameters = UIPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = UIBezierPath(
+            roundedRect: cardView.bounds,
+            cornerRadius: cardView.layer.cornerRadius
+        )
+        parameters.shadowPath = parameters.visiblePath
+
+        let center = cardView.convert(
+            CGPoint(x: cardView.bounds.midX, y: cardView.bounds.midY),
+            to: container
+        )
+        let target = UIPreviewTarget(
+            container: container,
+            center: center,
+            transform: .identity
+        )
+        return UITargetedPreview(view: snapshotView, parameters: parameters, target: target)
+    }
+
     func configure(with tracker: Tracker, isCompleted: Bool, completedCount: Int) {
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
+        pinImageView.isHidden = !tracker.isPinned
         countLabel.text = "\(completedCount) \(localizedDayWord(for: completedCount))"
 
         let imageName = isCompleted ? "checkmark" : "plus"

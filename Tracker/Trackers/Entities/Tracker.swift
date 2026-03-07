@@ -15,14 +15,24 @@ struct Tracker: Identifiable, Hashable {
     let color: UIColor
     let schedule: Set<Weekday>
     let createdAt: Date
+    let isPinned: Bool
 
-    init(id: UUID = UUID(), title: String, emoji: String, color: UIColor, schedule: Set<Weekday> = [], createdAt: Date = Date()) {
+    init(
+        id: UUID = UUID(),
+        title: String,
+        emoji: String,
+        color: UIColor,
+        schedule: Set<Weekday> = [],
+        createdAt: Date = Date(),
+        isPinned: Bool = false
+    ) {
         self.id = id
         self.title = title
         self.emoji = emoji
         self.color = color
         self.schedule = schedule
         self.createdAt = createdAt
+        self.isPinned = isPinned
     }
 
     static func == (lhs: Tracker, rhs: Tracker) -> Bool {

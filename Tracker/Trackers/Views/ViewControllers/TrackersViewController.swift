@@ -63,6 +63,7 @@ final class TrackersViewController: UIViewController {
 		let layout = UICollectionViewFlowLayout()
 		let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
 		cv.backgroundColor = .clear
+		cv.clipsToBounds = false
 		cv.alwaysBounceVertical = true
 		cv.showsVerticalScrollIndicator = true
 		cv.translatesAutoresizingMaskIntoConstraints = false
@@ -253,6 +254,60 @@ final class TrackersViewController: UIViewController {
 		present(nav, animated: true)
 	}
 
+	private func presentTrackerEditing(for trackerID: UUID) {
+		guard let creationViewModel = viewModel.makeTrackerEditingViewModel(for: trackerID) else { return }
+
+		creationViewModel.createTrackerPublisher
+			.receive(on: RunLoop.main)
+			.sink { [weak self] tracker, categoryTitle in
+				self?.viewModel.updateTracker(tracker, toCategoryWithTitle: categoryTitle)
+			}
+			.store(in: &cancellables)
+
+		let viewController: CreationViewController
+		switch creationViewModel.mode {
+		case .habit:
+			viewController = HabitCreationViewController(viewModel: creationViewModel)
+		case .irregularEvent:
+			viewController = IrregularEventCreationViewController(viewModel: creationViewModel)
+		}
+
+		let nav = UINavigationController(rootViewController: viewController)
+		nav.modalPresentationStyle = .pageSheet
+		if let sheet = nav.sheetPresentationController {
+			sheet.detents = [.large()]
+			sheet.prefersGrabberVisible = false
+			if #available(iOS 16.0, *) {
+				sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+			}
+		}
+
+		present(nav, animated: true)
+	}
+
+	private func presentDeleteTrackerConfirmation(for trackerID: UUID) {
+		let alert = UIAlertController(
+			title: nil,
+			message: String(localized: "tracker.delete.confirm"),
+			preferredStyle: .actionSheet
+		)
+
+		let deleteAction = UIAlertAction(title: String(localized: "tracker.menu.delete"), style: .destructive) { [weak self] _ in
+			self?.viewModel.didTapDeleteTracker(for: trackerID)
+		}
+		let cancelAction = UIAlertAction(title: String(localized: "common.cancel"), style: .cancel)
+		alert.addAction(deleteAction)
+		alert.addAction(cancelAction)
+
+		if let popover = alert.popoverPresentationController {
+			popover.sourceView = view
+			popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+			popover.permittedArrowDirections = []
+		}
+
+		present(alert, animated: true)
+	}
+
 	private func updatePlaceholderVisibility(isEmpty: Bool) {
 		placeholderStack.isHidden = !isEmpty
 		trackersCollectionView.isHidden = isEmpty
@@ -355,6 +410,63 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 		minimumLineSpacingForSectionAt section: Int
 	) -> CGFloat {
 		12
+	}
+
+	func collectionView(
+		_ collectionView: UICollectionView,
+		contextMenuConfigurationForItemAt indexPath: IndexPath,
+		point: CGPoint
+	) -> UIContextMenuConfiguration? {
+		let item = sections[indexPath.section].items[indexPath.item]
+		return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { [weak self] _ in
+			guard let self else { return UIMenu(children: []) }
+
+			let pinActionTitle = item.tracker.isPinned
+				? String(localized: "tracker.menu.unpin")
+				: String(localized: "tracker.menu.pin")
+			let pinAction = UIAction(title: pinActionTitle) { _ in
+				self.viewModel.didTapTogglePinned(for: item.tracker.id)
+			}
+
+			let editAction = UIAction(title: String(localized: "tracker.menu.edit")) { _ in
+				self.presentTrackerEditing(for: item.tracker.id)
+			}
+
+			let deleteAction = UIAction(
+				title: String(localized: "tracker.menu.delete"),
+				attributes: .destructive
+			) { _ in
+				self.presentDeleteTrackerConfirmation(for: item.tracker.id)
+			}
+
+			return UIMenu(children: [pinAction, editAction, deleteAction])
+		}
+	}
+
+	func collectionView(
+		_ collectionView: UICollectionView,
+		previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
+	) -> UITargetedPreview? {
+		guard
+			let indexPath = configuration.identifier as? NSIndexPath,
+			let cell = collectionView.cellForItem(at: indexPath as IndexPath) as? TrackerCell
+		else {
+			return nil
+		}
+		return cell.makeContextMenuPreview(in: collectionView)
+	}
+
+	func collectionView(
+		_ collectionView: UICollectionView,
+		previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
+	) -> UITargetedPreview? {
+		guard
+			let indexPath = configuration.identifier as? NSIndexPath,
+			let cell = collectionView.cellForItem(at: indexPath as IndexPath) as? TrackerCell
+		else {
+			return nil
+		}
+		return cell.makeContextMenuPreview(in: collectionView)
 	}
 }
 

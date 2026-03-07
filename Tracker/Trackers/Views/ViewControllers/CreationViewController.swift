@@ -305,6 +305,7 @@ class CreationViewController: UIViewController {
 	private func applyState(_ state: CreationViewModel.State) {
 		self.state = state
 		headerLabel.text = state.screenTitle
+		createButton.configuration?.title = state.submitButtonTitle
 
 		if titleField.text != state.title {
 			titleField.text = state.title

@@ -150,6 +150,45 @@ final class TrackersViewModel {
 		}
 	}
 
+	func updateTracker(_ tracker: Tracker, toCategoryWithTitle title: String) {
+		do {
+			try trackerStore.update(tracker, toCategoryWithTitle: title)
+		} catch {
+			assertionFailure("Failed to update tracker: \(error)")
+			alertSubject.send(.operationFailed(message: String(localized: "tracker.alert.updateFailed")))
+		}
+	}
+
+	func didTapTogglePinned(for trackerID: UUID) {
+		guard let trackerContext = trackerContext(for: trackerID) else { return }
+		do {
+			try trackerStore.setPinned(!trackerContext.tracker.isPinned, for: trackerID)
+		} catch {
+			assertionFailure("Failed to toggle pinned state: \(error)")
+			alertSubject.send(.operationFailed(message: String(localized: "tracker.alert.updatePinFailed")))
+		}
+	}
+
+	func didTapDeleteTracker(for trackerID: UUID) {
+		do {
+			try trackerStore.deleteTracker(with: trackerID)
+		} catch {
+			assertionFailure("Failed to delete tracker: \(error)")
+			alertSubject.send(.operationFailed(message: String(localized: "tracker.alert.deleteFailed")))
+		}
+	}
+
+	func makeTrackerEditingViewModel(for trackerID: UUID) -> CreationViewModel? {
+		guard let trackerContext = trackerContext(for: trackerID) else { return nil }
+		let mode: TrackerCreationMode = trackerContext.tracker.schedule.isEmpty ? .irregularEvent : .habit
+		return CreationViewModel(
+			mode: mode,
+			trackerCategoryStore: trackerCategoryStore,
+			initialTracker: trackerContext.tracker,
+			initialCategoryTitle: trackerContext.categoryTitle
+		)
+	}
+
 	func makeTrackerTypeSelectionViewModel(
 		onCreate: @escaping (Tracker, String) -> Void
 	) -> TrackerTypeSelectionViewModel {
@@ -222,16 +261,38 @@ final class TrackersViewModel {
 		from categories: [TrackerCategory],
 		for date: Date
 	) -> [TrackerCategorySectionViewData] {
-		categories.map { category in
-			let items = category.trackers.map { tracker in
-				TrackerItemViewData(
+		var pinnedItems: [TrackerItemViewData] = []
+		var regularSections: [TrackerCategorySectionViewData] = []
+
+		for category in categories {
+			var regularItems: [TrackerItemViewData] = []
+			for tracker in category.trackers {
+				let item = TrackerItemViewData(
 					tracker: tracker,
 					completedCount: completedCount(for: tracker.id),
 					isCompletedOnSelectedDate: isTrackerCompleted(trackerID: tracker.id, on: date)
 				)
+
+				if tracker.isPinned {
+					pinnedItems.append(item)
+				} else {
+					regularItems.append(item)
+				}
 			}
-			return TrackerCategorySectionViewData(title: category.title, items: items)
+
+			if !regularItems.isEmpty {
+				regularSections.append(TrackerCategorySectionViewData(title: category.title, items: regularItems))
+			}
 		}
+
+		pinnedItems.sort { $0.tracker.createdAt < $1.tracker.createdAt }
+
+		if pinnedItems.isEmpty {
+			return regularSections
+		}
+
+		return [TrackerCategorySectionViewData(title: String(localized: "tracker.pinned.section"), items: pinnedItems)]
+			+ regularSections
 	}
 
 	private func shouldDisplayTracker(_ tracker: Tracker, on selectedDay: Date, weekday: Weekday) -> Bool {
@@ -270,5 +331,14 @@ final class TrackersViewModel {
 	private func isFutureSelectedDate() -> Bool {
 		let today = calendar.startOfDay(for: Date())
 		return selectedDate > today
+	}
+
+	private func trackerContext(for trackerID: UUID) -> (tracker: Tracker, categoryTitle: String)? {
+		for category in categories {
+			if let tracker = category.trackers.first(where: { $0.id == trackerID }) {
+				return (tracker, category.title)
+			}
+		}
+		return nil
 	}
 }

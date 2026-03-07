@@ -11,6 +11,10 @@ import UIKit
 import Combine
 
 final class TrackerStore: NSObject {
+	enum StoreError: Error {
+		case trackerNotFound(UUID)
+	}
+
 	private enum TrackerEntity {
 		static let name = "TrackerCoreData"
 		static let id = "id"
@@ -19,6 +23,7 @@ final class TrackerStore: NSObject {
 		static let color = "color"
 		static let schedule = "schedule"
 		static let createdAt = "createdAt"
+		static let isPinned = "isPinned"
 		static let category = "category"
 	}
 
@@ -87,8 +92,31 @@ final class TrackerStore: NSObject {
 		trackerObject.setValue(tracker.color, forKey: TrackerEntity.color)
 		trackerObject.setValue(Array(tracker.schedule), forKey: TrackerEntity.schedule)
 		trackerObject.setValue(tracker.createdAt, forKey: TrackerEntity.createdAt)
+		trackerObject.setValue(tracker.isPinned, forKey: TrackerEntity.isPinned)
 		trackerObject.setValue(categoryObject, forKey: TrackerEntity.category)
 
+		coreDataStack.saveContext()
+	}
+
+	func update(_ tracker: Tracker, toCategoryWithTitle title: String) throws {
+		try add(tracker, toCategoryWithTitle: title)
+	}
+
+	func setPinned(_ isPinned: Bool, for trackerID: UUID) throws {
+		let context = coreDataStack.viewContext
+		guard let trackerObject = try fetchTrackerObject(by: trackerID, in: context) else {
+			throw StoreError.trackerNotFound(trackerID)
+		}
+		trackerObject.setValue(isPinned, forKey: TrackerEntity.isPinned)
+		coreDataStack.saveContext()
+	}
+
+	func deleteTracker(with id: UUID) throws {
+		let context = coreDataStack.viewContext
+		guard let trackerObject = try fetchTrackerObject(by: id, in: context) else {
+			throw StoreError.trackerNotFound(id)
+		}
+		context.delete(trackerObject)
 		coreDataStack.saveContext()
 	}
 
@@ -148,7 +176,8 @@ final class TrackerStore: NSObject {
 			emoji: emoji,
 			color: color,
 			schedule: Set(weekdays),
-			createdAt: createdAt
+			createdAt: createdAt,
+			isPinned: trackerObject.value(forKey: TrackerEntity.isPinned) as? Bool ?? false
 		)
 	}
 

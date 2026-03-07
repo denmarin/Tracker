@@ -19,6 +19,7 @@ final class CategoryListViewModel {
 	var onSelectionConfirmed: (() -> Void)?
 
 	private let categoryStore: TrackerCategoryStore
+	private let pinnedSectionTitle = String(localized: "tracker.pinned.section")
 	private var categories: [TrackerCategoryItem] = []
 	private var selectedCategoryObjectID: NSManagedObjectID?
 	private var pendingDeletionObjectID: NSManagedObjectID?
@@ -123,7 +124,12 @@ final class CategoryListViewModel {
 	}
 
 	private func reloadCategories() {
-		categories = categoryStore.fetchCategories()
+		categories = categoryStore.fetchCategories().filter { category in
+			category.title.compare(
+				pinnedSectionTitle,
+				options: [.caseInsensitive, .diacriticInsensitive]
+			) != .orderedSame
+		}
 		if let selectedCategoryObjectID,
 		   categories.contains(where: { $0.objectID == selectedCategoryObjectID }) == false
 		{
