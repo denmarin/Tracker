@@ -35,6 +35,16 @@ class CreationViewController: UIViewController {
 		return label
 	}()
 
+	private let completedDaysLabel: UILabel = {
+		let label = UILabel()
+		label.font = .systemFont(ofSize: 32, weight: .bold)
+		label.textColor = .ypBlack
+		label.textAlignment = .center
+		label.isHidden = true
+		label.translatesAutoresizingMaskIntoConstraints = false
+		return label
+	}()
+
 	private let bottomBar: UIStackView = {
 		let v = UIStackView()
 		v.axis = .horizontal
@@ -197,6 +207,7 @@ class CreationViewController: UIViewController {
 		configureSettingsRows()
 
 		stack.addArrangedSubview(headerLabel)
+		stack.addArrangedSubview(completedDaysLabel)
 		stack.addArrangedSubview(titleField)
 		stack.addArrangedSubview(titleErrorLabel)
 		stack.addArrangedSubview(settingsGroupView)
@@ -258,6 +269,7 @@ class CreationViewController: UIViewController {
 		])
 
 		headerLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
+		completedDaysLabel.heightAnchor.constraint(equalToConstant: 38).isActive = true
 		titleField.heightAnchor.constraint(equalToConstant: 75).isActive = true
 		titleErrorLabel.heightAnchor.constraint(equalToConstant: 22).isActive = true
 		emojiCollectionView.heightAnchor.constraint(equalToConstant: 156).isActive = true
@@ -306,6 +318,8 @@ class CreationViewController: UIViewController {
 		self.state = state
 		headerLabel.text = state.screenTitle
 		createButton.configuration?.title = state.submitButtonTitle
+		completedDaysLabel.text = state.completedDaysText
+		completedDaysLabel.isHidden = state.completedDaysText == nil
 
 		if titleField.text != state.title {
 			titleField.text = state.title

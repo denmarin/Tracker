@@ -195,7 +195,8 @@ final class TrackersViewModel {
 			mode: mode,
 			trackerCategoryStore: trackerCategoryStore,
 			initialTracker: trackerContext.tracker,
-			initialCategoryTitle: trackerContext.categoryTitle
+			initialCategoryTitle: trackerContext.categoryTitle,
+			initialCompletedCount: completedCount(for: trackerContext.tracker.id)
 		)
 	}
 

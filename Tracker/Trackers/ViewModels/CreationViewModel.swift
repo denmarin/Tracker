@@ -49,6 +49,7 @@ final class CreationViewModel {
 	struct State {
 		let screenTitle: String
 		let submitButtonTitle: String
+		let completedDaysText: String?
 		let title: String
 		let selectedCategoryTitle: String?
 		let selectedEmoji: String?
@@ -79,6 +80,7 @@ final class CreationViewModel {
 	private let trackerCategoryStore: TrackerCategoryStore
 	private let maxTitleLength = 38
 	private let submissionMode: SubmissionMode
+	private let initialCompletedCount: Int
 	private let stateSubject: CurrentValueSubject<State, Never>
 	private let dismissSubject = PassthroughSubject<Void, Never>()
 	private let createTrackerSubject = PassthroughSubject<(Tracker, String), Never>()
@@ -93,10 +95,12 @@ final class CreationViewModel {
 		mode: TrackerCreationMode,
 		trackerCategoryStore: TrackerCategoryStore,
 		initialTracker: Tracker? = nil,
-		initialCategoryTitle: String? = nil
+		initialCategoryTitle: String? = nil,
+		initialCompletedCount: Int = 0
 	) {
 		self.mode = mode
 		self.trackerCategoryStore = trackerCategoryStore
+		self.initialCompletedCount = initialCompletedCount
 		if let initialTracker {
 			self.submissionMode = .edit(
 				originalTrackerID: initialTracker.id,
@@ -122,6 +126,11 @@ final class CreationViewModel {
 				submitButtonTitle: initialTracker == nil
 					? String(localized: "common.create")
 					: String(localized: "common.save"),
+				completedDaysText: Self.makeCompletedDaysText(
+					isEditing: initialTracker != nil,
+					mode: mode,
+					completedCount: initialCompletedCount
+				),
 				title: title,
 				selectedCategoryTitle: selectedCategoryTitle,
 				selectedEmoji: selectedEmoji,
@@ -201,6 +210,11 @@ final class CreationViewModel {
 				submitButtonTitle: isEditing
 					? String(localized: "common.save")
 					: String(localized: "common.create"),
+				completedDaysText: Self.makeCompletedDaysText(
+					isEditing: isEditing,
+					mode: mode,
+					completedCount: initialCompletedCount
+				),
 				title: title,
 				selectedCategoryTitle: selectedCategoryTitle,
 				selectedEmoji: selectedEmoji,
@@ -281,5 +295,36 @@ final class CreationViewModel {
 			guard let assetColor = UIColor(named: assetName) else { return false }
 			return assetColor.isEqual(color)
 		}
+	}
+
+	private static func makeCompletedDaysText(
+		isEditing: Bool,
+		mode: TrackerCreationMode,
+		completedCount: Int
+	) -> String? {
+		guard isEditing, mode == .habit else { return nil }
+		let dayWord = localizedDayWord(for: completedCount)
+		let completedCountText = String(completedCount)
+		let format = String(localized: "tracker.edit.completedDays.format")
+		return String(format: format, locale: Locale.current, completedCountText, dayWord)
+	}
+
+	private static func localizedDayWord(for count: Int) -> String {
+		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+		if languageCode == "ru" {
+			let mod10 = count % 10
+			let mod100 = count % 100
+			if mod10 == 1 && mod100 != 11 {
+				return String(localized: "tracker.dayWord.one")
+			}
+			if (2...4).contains(mod10) && !(12...14).contains(mod100) {
+				return String(localized: "tracker.dayWord.few")
+			}
+			return String(localized: "tracker.dayWord.many")
+		}
+
+		return count == 1
+			? String(localized: "tracker.dayWord.one")
+			: String(localized: "tracker.dayWord.other")
 	}
 }
