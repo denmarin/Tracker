@@ -105,7 +105,12 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 	}
 
 	private func makeStatisticsNavigationController() -> UINavigationController {
-		let statisticsViewController = StatisticsViewController(viewModel: StatisticsViewModel())
+		let statisticsViewController = StatisticsViewController(
+			viewModel: StatisticsViewModel(
+				trackerStore: makeTrackerStore(categoryStore: makeTrackerCategoryStore()),
+				trackerRecordStore: makeTrackerRecordStore()
+			)
+		)
 		let navigationController = UINavigationController(rootViewController: statisticsViewController)
 		navigationController.tabBarItem = UITabBarItem(
 			title: String(localized: "tab.statistics"),
