@@ -11,6 +11,7 @@ import Combine
 
 final class TrackersViewController: UIViewController {
 	private let viewModel: TrackersViewModel
+	private var state: TrackersViewModel.State?
 	private var sections: [TrackerCategorySectionViewData] = []
 	private var cancellables = Set<AnyCancellable>()
 
@@ -105,6 +106,21 @@ final class TrackersViewController: UIViewController {
 		return stack
 	}()
 
+	private let filtersButton: UIButton = {
+		let button = UIButton(type: .system)
+		var config = UIButton.Configuration.filled()
+		config.title = String(localized: "trackers.filter.button")
+		config.baseBackgroundColor = .ypBlue
+		config.baseForegroundColor = .ypWhite
+		config.cornerStyle = .fixed
+		config.background.cornerRadius = 16
+		config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 20, bottom: 14, trailing: 20)
+		button.configuration = config
+		button.isHidden = true
+		button.translatesAutoresizingMaskIntoConstraints = false
+		return button
+	}()
+
 	init(viewModel: TrackersViewModel) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
@@ -136,6 +152,11 @@ final class TrackersViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(false, animated: animated)
 	}
 
+	override func viewDidLayoutSubviews() {
+		super.viewDidLayoutSubviews()
+		updateCollectionInsets()
+	}
+
 	private func setupViews() {
 		view.addSubview(createTrackerButton)
 		view.addSubview(datePicker)
@@ -143,6 +164,7 @@ final class TrackersViewController: UIViewController {
 		searchBar.delegate = self
 		view.addSubview(searchBar)
 		view.addSubview(trackersCollectionView)
+		view.addSubview(filtersButton)
 
 		placeholderStack.addArrangedSubview(placeholderImageView)
 		placeholderStack.addArrangedSubview(placeholderLabel)
@@ -186,6 +208,12 @@ final class TrackersViewController: UIViewController {
 		])
 
 		NSLayoutConstraint.activate([
+			filtersButton.centerXAnchor.constraint(equalTo: safe.centerXAnchor),
+			filtersButton.bottomAnchor.constraint(equalTo: safe.bottomAnchor, constant: -16),
+			filtersButton.heightAnchor.constraint(equalToConstant: 50)
+		])
+
+		NSLayoutConstraint.activate([
 			placeholderImageView.widthAnchor.constraint(equalToConstant: 80),
 			placeholderImageView.heightAnchor.constraint(equalToConstant: 80)
 		])
@@ -201,6 +229,12 @@ final class TrackersViewController: UIViewController {
 			self?.viewModel.didTapCreateTracker()
 		}, for: .touchUpInside)
 
+		filtersButton.addAction(UIAction { [weak self] _ in
+			guard let self else { return }
+			self.view.endEditing(true)
+			self.presentFilters()
+		}, for: .touchUpInside)
+
 		datePicker.addAction(UIAction { [weak self] _ in
 			guard let self else { return }
 			self.view.endEditing(true)
@@ -213,10 +247,13 @@ final class TrackersViewController: UIViewController {
 			.receive(on: RunLoop.main)
 			.sink { [weak self] state in
 				guard let self else { return }
+				self.state = state
 				self.sections = state.sections
 				self.datePicker.setDate(state.selectedDate, animated: false)
+				self.filtersButton.isHidden = state.isFilterButtonHidden
 				self.trackersCollectionView.reloadData()
 				self.updatePlaceholder(with: state.emptyState)
+				self.updateCollectionInsets()
 			}
 			.store(in: &cancellables)
 
@@ -233,6 +270,35 @@ final class TrackersViewController: UIViewController {
 				self?.presentAlert(alert)
 			}
 			.store(in: &cancellables)
+	}
+
+	private func presentFilters() {
+		guard let state else { return }
+		let filtersViewController = TrackersFiltersViewController(selectedFilter: state.selectedFilter)
+		filtersViewController.onSelectFilterOption = { [weak self] option in
+			self?.viewModel.didSelectFilterOption(option)
+		}
+
+		filtersViewController.modalPresentationStyle = .pageSheet
+		if let sheet = filtersViewController.sheetPresentationController {
+			sheet.detents = [.large()]
+			sheet.prefersGrabberVisible = false
+			if #available(iOS 16.0, *) {
+				sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+			}
+		}
+
+		present(filtersViewController, animated: true)
+	}
+
+	private func updateCollectionInsets() {
+		let bottomInset = filtersButton.isHidden ? 0 : filtersButton.bounds.height + 24
+		if trackersCollectionView.contentInset.bottom != bottomInset {
+			trackersCollectionView.contentInset.bottom = bottomInset
+		}
+		if trackersCollectionView.verticalScrollIndicatorInsets.bottom != bottomInset {
+			trackersCollectionView.verticalScrollIndicatorInsets.bottom = bottomInset
+		}
 	}
 
 	private func presentTrackerTypeSelection() {

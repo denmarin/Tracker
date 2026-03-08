@@ -29,9 +29,15 @@ final class TrackersViewModel {
 		let sections: [TrackerCategorySectionViewData]
 		let selectedDate: Date
 		let emptyState: EmptyState?
+		let isFilterButtonHidden: Bool
+		let selectedFilter: TrackersFilter?
 
 		var isEmpty: Bool {
 			emptyState != nil
+		}
+
+		var isFilterApplied: Bool {
+			selectedFilter != nil
 		}
 	}
 
@@ -84,6 +90,7 @@ final class TrackersViewModel {
 	private var completedTrackers: [TrackerRecord] = []
 	private var selectedDate: Date
 	private var searchQuery = ""
+	private var selectedFilter: TrackersFilter?
 	private var hasBoundStoreUpdates = false
 	private var cancellables = Set<AnyCancellable>()
 
@@ -106,7 +113,9 @@ final class TrackersViewModel {
 			State(
 				sections: [],
 				selectedDate: normalizedInitialDate,
-				emptyState: .noTrackers
+				emptyState: .noTrackers,
+				isFilterButtonHidden: true,
+				selectedFilter: nil
 			)
 		)
 	}
@@ -130,6 +139,22 @@ final class TrackersViewModel {
 		let normalizedQuery = normalizedSearchQuery(query)
 		guard normalizedQuery != searchQuery else { return }
 		searchQuerySubject.send(normalizedQuery)
+	}
+
+	func didSelectFilterOption(_ option: TrackersFilterOption) {
+		selectedFilter = option.persistentFilter
+
+		if option.setsDateToToday {
+			let today = calendar.startOfDay(for: Date())
+			if selectedDate == today {
+				emitState()
+			} else {
+				selectedDateSubject.send(today)
+			}
+			return
+		}
+
+		emitState()
 	}
 
 	func didTapToggleCompletion(for trackerID: UUID) {
@@ -249,27 +274,76 @@ final class TrackersViewModel {
 	}
 
 	private func emitState() {
-		visibleCategories = makeVisibleCategories(for: selectedDate, searchQuery: searchQuery)
+		let dayCategories = makeCategoriesVisibleOnSelectedDate(selectedDate)
+		let hasTrackersOnSelectedDate = !dayCategories.isEmpty
+
+		let filteredByCompletion = makeCategoriesFilteredByCompletionStatus(
+			dayCategories,
+			filter: selectedFilter,
+			date: selectedDate
+		)
+		visibleCategories = makeCategoriesFilteredBySearchQuery(filteredByCompletion, query: searchQuery)
 		let sections = makeSections(from: visibleCategories, for: selectedDate)
 		let emptyState: EmptyState? = sections.isEmpty
-		? (searchQuery.isEmpty ? .noTrackers : .noSearchResults)
+		? ((searchQuery.isEmpty && (!hasTrackersOnSelectedDate || selectedFilter == nil)) ? .noTrackers : .noSearchResults)
 		: nil
+
 		stateSubject.send(
 			State(
 				sections: sections,
 				selectedDate: selectedDate,
-				emptyState: emptyState
+				emptyState: emptyState,
+				isFilterButtonHidden: !hasTrackersOnSelectedDate,
+				selectedFilter: selectedFilter
 			)
 		)
 	}
 
-	private func makeVisibleCategories(for date: Date, searchQuery: String) -> [TrackerCategory] {
+	private func makeCategoriesVisibleOnSelectedDate(_ date: Date) -> [TrackerCategory] {
 		let weekday = Weekday.from(date, calendar: calendar)
 
 		return categories.compactMap { category in
 			let trackers = category.trackers.filter { tracker in
 				shouldDisplayTracker(tracker, on: date, weekday: weekday)
-				&& matchesSearchQuery(tracker.title, query: searchQuery)
+			}
+
+			guard !trackers.isEmpty else { return nil }
+			return TrackerCategory(title: category.title, trackers: trackers)
+		}
+	}
+
+	private func makeCategoriesFilteredByCompletionStatus(
+		_ categories: [TrackerCategory],
+		filter: TrackersFilter?,
+		date: Date
+	) -> [TrackerCategory] {
+		guard let filter else { return categories }
+
+		return categories.compactMap { category in
+			let trackers = category.trackers.filter { tracker in
+				let isCompleted = isTrackerCompleted(trackerID: tracker.id, on: date)
+				switch filter {
+				case .completed:
+					return isCompleted
+				case .notCompleted:
+					return !isCompleted
+				}
+			}
+
+			guard !trackers.isEmpty else { return nil }
+			return TrackerCategory(title: category.title, trackers: trackers)
+		}
+	}
+
+	private func makeCategoriesFilteredBySearchQuery(
+		_ categories: [TrackerCategory],
+		query: String
+	) -> [TrackerCategory] {
+		guard !query.isEmpty else { return categories }
+
+		return categories.compactMap { category in
+			let trackers = category.trackers.filter { tracker in
+				matchesSearchQuery(tracker.title, query: query)
 			}
 
 			guard !trackers.isEmpty else { return nil }
