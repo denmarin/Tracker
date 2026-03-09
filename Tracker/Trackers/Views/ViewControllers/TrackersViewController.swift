@@ -147,9 +147,19 @@ final class TrackersViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(true, animated: animated)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.main)
+	}
+
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
 		navigationController?.setNavigationBarHidden(false, animated: animated)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.main)
 	}
 
 	override func viewDidLayoutSubviews() {
@@ -226,11 +236,13 @@ final class TrackersViewController: UIViewController {
 
 	private func setupActions() {
 		createTrackerButton.addAction(UIAction { [weak self] _ in
+			AppAnalytics.shared.click(.main, item: .addTrack)
 			self?.viewModel.didTapCreateTracker()
 		}, for: .touchUpInside)
 
 		filtersButton.addAction(UIAction { [weak self] _ in
 			guard let self else { return }
+			AppAnalytics.shared.click(.main, item: .filter)
 			self.view.endEditing(true)
 			self.presentFilters()
 		}, for: .touchUpInside)
@@ -432,6 +444,7 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 			completedCount: item.completedCount
 		)
 		cell.onToggle = { [weak self] in
+			AppAnalytics.shared.click(.main, item: .track)
 			self?.viewModel.didTapToggleCompletion(for: item.tracker.id)
 		}
 		return cell
@@ -510,6 +523,7 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 			}
 
 			let editAction = UIAction(title: String(localized: "tracker.menu.edit")) { _ in
+				AppAnalytics.shared.click(.main, item: .edit)
 				self.presentTrackerEditing(for: item.tracker.id)
 			}
 
@@ -517,6 +531,7 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 				title: String(localized: "tracker.menu.delete"),
 				attributes: .destructive
 			) { _ in
+				AppAnalytics.shared.click(.main, item: .delete)
 				self.presentDeleteTrackerConfirmation(for: item.tracker.id)
 			}
 

@@ -77,6 +77,16 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 		navigationController?.setNavigationBarHidden(false, animated: false)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.schedule)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.schedule)
+	}
+
 	private func setupViews() {
 		tableView.dataSource = self
 		tableView.delegate = self
@@ -103,6 +113,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 
 	private func setupActions() {
 		doneButton.addAction(UIAction { [weak self] _ in
+			AppAnalytics.shared.click(.schedule, item: .done)
 			self?.viewModel.didTapDone()
 		}, for: .touchUpInside)
 	}
@@ -162,6 +173,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 				let currentIndexPath = tableView.indexPath(for: cell)
 			else { return }
 
+			AppAnalytics.shared.click(.schedule, item: .day)
 			self.viewModel.didToggleDay(at: currentIndexPath.row)
 		}, for: .valueChanged)
 		cell.accessoryView = sw
@@ -170,6 +182,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		tableView.deselectRow(at: indexPath, animated: true)
+		AppAnalytics.shared.click(.schedule, item: .day)
 		viewModel.didToggleDay(at: indexPath.row)
 	}
 

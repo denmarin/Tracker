@@ -99,6 +99,16 @@ final class CategoryListViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(true, animated: false)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.categoryList)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.categoryList)
+	}
+
 	override func viewDidLayoutSubviews() {
 		super.viewDidLayoutSubviews()
 		let bottomInset = addCategoryButton.bounds.height + 16
@@ -150,6 +160,7 @@ final class CategoryListViewController: UIViewController {
 
 	private func setupActions() {
 		addCategoryButton.addAction(UIAction { [weak self] _ in
+			AppAnalytics.shared.click(.categoryList, item: .addCategory)
 			self?.viewModel.didTapAddCategory()
 		}, for: .touchUpInside)
 	}
@@ -278,6 +289,7 @@ extension CategoryListViewController: UITableViewDataSource {
 extension CategoryListViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		tableView.deselectRow(at: indexPath, animated: true)
+		AppAnalytics.shared.click(.categoryList, item: .categorySelection)
 		viewModel.didSelectCategory(at: indexPath.row)
 	}
 
@@ -288,10 +300,12 @@ extension CategoryListViewController: UITableViewDelegate {
 	) -> UIContextMenuConfiguration? {
 		UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
 			let editAction = UIAction(title: String(localized: "category.edit.action")) { _ in
+				AppAnalytics.shared.click(.categoryList, item: .edit)
 				self?.viewModel.didTapEditCategory(at: indexPath.row)
 			}
 
 			let deleteAction = UIAction(title: String(localized: "category.delete.action"), attributes: .destructive) { _ in
+				AppAnalytics.shared.click(.categoryList, item: .delete)
 				self?.viewModel.didTapDeleteCategory(at: indexPath.row)
 			}
 

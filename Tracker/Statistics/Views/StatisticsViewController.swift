@@ -87,9 +87,19 @@ final class StatisticsViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(true, animated: animated)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.statistics)
+	}
+
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
 		navigationController?.setNavigationBarHidden(false, animated: animated)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.statistics)
 	}
 
 	private func setupViews() {

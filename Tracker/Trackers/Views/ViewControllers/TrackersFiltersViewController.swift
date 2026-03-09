@@ -62,6 +62,16 @@ final class TrackersFiltersViewController: UIViewController {
 		setupConstraints()
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.filters)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.filters)
+	}
+
 	private func setupViews() {
 		view.backgroundColor = .ypWhite
 
@@ -109,6 +119,7 @@ extension TrackersFiltersViewController: UITableViewDataSource {
 extension TrackersFiltersViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		tableView.deselectRow(at: indexPath, animated: true)
+		AppAnalytics.shared.click(.filters, item: .filterOption)
 		let option = rows[indexPath.row].option
 		onSelectFilterOption?(option)
 		dismiss(animated: true)

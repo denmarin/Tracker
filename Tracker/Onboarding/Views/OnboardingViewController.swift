@@ -80,6 +80,16 @@ final class OnboardingViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(true, animated: false)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.onboarding)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.onboarding)
+	}
+
 	private func setupViews() {
 		pageControl.numberOfPages = pageViewControllers.count
 
@@ -111,6 +121,7 @@ final class OnboardingViewController: UIViewController {
 
 	private func setupActions() {
 		actionButton.addAction(UIAction { [weak self] _ in
+			AppAnalytics.shared.click(.onboarding, item: .onboardingAction)
 			self?.viewModel.didTapActionButton()
 		}, for: .touchUpInside)
 	}

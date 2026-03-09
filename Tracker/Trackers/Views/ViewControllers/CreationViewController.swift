@@ -15,6 +15,15 @@ class CreationViewController: UIViewController {
 	private var cancellables = Set<AnyCancellable>()
 	private var scheduleSelectionCancellable: AnyCancellable?
 
+	private var analyticsScreen: AnalyticsScreen {
+		switch viewModel.mode {
+		case .habit:
+			.habitCreation
+		case .irregularEvent:
+			.irregularEventCreation
+		}
+	}
+
 	private lazy var scrollView = UIScrollView()
 	private lazy var contentView = UIView()
 
@@ -194,6 +203,16 @@ class CreationViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(true, animated: false)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(analyticsScreen)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(analyticsScreen)
+	}
+
 	private func setupViews() {
 		scrollView.translatesAutoresizingMaskIntoConstraints = false
 		contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -226,13 +245,17 @@ class CreationViewController: UIViewController {
 	private func configureSettingsRows() {
 		categoryRow.configure(title: String(localized: "tracker.creation.category.row"))
 		categoryRow.addAction(UIAction { [weak self] _ in
-			self?.didTapCategory()
+			guard let self else { return }
+			AppAnalytics.shared.click(self.analyticsScreen, item: .category)
+			self.didTapCategory()
 		}, for: .touchUpInside)
 		categoryRow.heightAnchor.constraint(equalToConstant: 75).isActive = true
 
 		scheduleRow.configure(title: String(localized: "tracker.creation.schedule.row"))
 		scheduleRow.addAction(UIAction { [weak self] _ in
-			self?.didTapSchedule()
+			guard let self else { return }
+			AppAnalytics.shared.click(self.analyticsScreen, item: .schedule)
+			self.didTapSchedule()
 		}, for: .touchUpInside)
 		scheduleRow.heightAnchor.constraint(equalToConstant: 75).isActive = true
 	}
@@ -286,11 +309,15 @@ class CreationViewController: UIViewController {
 
 	private func setupActions() {
 		cancelButton.addAction(UIAction { [weak self] _ in
-			self?.viewModel.didTapCancel()
+			guard let self else { return }
+			AppAnalytics.shared.click(self.analyticsScreen, item: .cancel)
+			self.viewModel.didTapCancel()
 		}, for: .touchUpInside)
 
 		createButton.addAction(UIAction { [weak self] _ in
-			self?.viewModel.didTapCreate()
+			guard let self else { return }
+			AppAnalytics.shared.click(self.analyticsScreen, item: .create)
+			self.viewModel.didTapCreate()
 		}, for: .touchUpInside)
 
 		titleField.addAction(UIAction { [weak self] _ in
@@ -444,8 +471,10 @@ extension CreationViewController: UICollectionViewDataSource {
 extension CreationViewController: UICollectionViewDelegate {
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 		if collectionView === emojiCollectionView {
+			AppAnalytics.shared.click(analyticsScreen, item: .emoji)
 			viewModel.selectEmoji(at: indexPath.item)
 		} else {
+			AppAnalytics.shared.click(analyticsScreen, item: .color)
 			viewModel.selectColor(at: indexPath.item)
 		}
 	}

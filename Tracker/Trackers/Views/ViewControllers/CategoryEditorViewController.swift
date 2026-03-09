@@ -88,6 +88,16 @@ final class CategoryEditorViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(true, animated: false)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.categoryEditor)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.categoryEditor)
+	}
+
 	private func setupViews() {
 		view.backgroundColor = .ypWhite
 		view.addSubview(titleLabel)
@@ -120,6 +130,7 @@ final class CategoryEditorViewController: UIViewController {
 		}, for: .editingChanged)
 
 		doneButton.addAction(UIAction { [weak self] _ in
+			AppAnalytics.shared.click(.categoryEditor, item: .done)
 			self?.viewModel.didTapDone()
 		}, for: .touchUpInside)
 	}

@@ -49,6 +49,16 @@ final class TrackerTypeSelectionViewController: UIViewController {
 		navigationController?.setNavigationBarHidden(false, animated: false)
 	}
 
+	override func viewDidAppear(_ animated: Bool) {
+		super.viewDidAppear(animated)
+		AppAnalytics.shared.open(.trackerTypeSelection)
+	}
+
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		AppAnalytics.shared.close(.trackerTypeSelection)
+	}
+
 	private func setupViews() {
 		view.addSubview(stack)
 		stack.addArrangedSubview(habitButton)
@@ -65,10 +75,12 @@ final class TrackerTypeSelectionViewController: UIViewController {
 
 	private func setupActions() {
 		habitButton.addAction(UIAction { [weak self] _ in
+			AppAnalytics.shared.click(.trackerTypeSelection, item: .habit)
 			self?.viewModel.didSelectHabit()
 		}, for: .touchUpInside)
 
 		irregularButton.addAction(UIAction { [weak self] _ in
+			AppAnalytics.shared.click(.trackerTypeSelection, item: .irregularEvent)
 			self?.viewModel.didSelectIrregularEvent()
 		}, for: .touchUpInside)
 	}
