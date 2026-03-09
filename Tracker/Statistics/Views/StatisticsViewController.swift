@@ -13,6 +13,15 @@ final class StatisticsViewController: UIViewController {
 	private let viewModel: StatisticsViewModel
 	private var cancellables = Set<AnyCancellable>()
 
+	private enum UIConstants {
+		static let sideInset: CGFloat = 16
+		static let titleTopInset: CGFloat = 44
+		static let contentTopInset: CGFloat = 77
+		static let placeholderImageSize: CGFloat = 80
+		static let cardsSpacing: CGFloat = 12
+		static let cardHeight: CGFloat = 90
+	}
+
 	private let titleLabel: UILabel = {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 34, weight: .bold)
@@ -22,19 +31,20 @@ final class StatisticsViewController: UIViewController {
 		return label
 	}()
 
-	private let statisticsScrollView: UIScrollView = {
+	private lazy var statisticsStackView: UIStackView = {
+		let stackView = UIStackView()
+		stackView.axis = .vertical
+		stackView.spacing = UIConstants.cardsSpacing
+		stackView.translatesAutoresizingMaskIntoConstraints = false
+		return stackView
+	}()
+
+	private lazy var statisticsScrollView: UIScrollView = {
 		let scrollView = UIScrollView()
 		scrollView.showsVerticalScrollIndicator = false
 		scrollView.translatesAutoresizingMaskIntoConstraints = false
+		scrollView.addSubview(statisticsStackView)
 		return scrollView
-	}()
-
-	private let statisticsStackView: UIStackView = {
-		let stackView = UIStackView()
-		stackView.axis = .vertical
-		stackView.spacing = 12
-		stackView.translatesAutoresizingMaskIntoConstraints = false
-		return stackView
 	}()
 
 	private let placeholderImageView: UIImageView = {
@@ -54,8 +64,8 @@ final class StatisticsViewController: UIViewController {
 		return label
 	}()
 
-	private let placeholderStack: UIStackView = {
-		let stack = UIStackView()
+	private lazy var placeholderStack: UIStackView = {
+		let stack = UIStackView(arrangedSubviews: [placeholderImageView, placeholderLabel])
 		stack.axis = .vertical
 		stack.alignment = .center
 		stack.spacing = 8
@@ -76,8 +86,7 @@ final class StatisticsViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .ypWhite
-		setupViews()
-		setupConstraints()
+		configureLayout()
 		bindViewModel()
 		viewModel.viewDidLoad()
 	}
@@ -102,29 +111,23 @@ final class StatisticsViewController: UIViewController {
 		AppAnalytics.shared.close(.statistics)
 	}
 
-	private func setupViews() {
+	private func configureLayout() {
 		view.addSubview(titleLabel)
 		view.addSubview(statisticsScrollView)
-		statisticsScrollView.addSubview(statisticsStackView)
-
-		placeholderStack.addArrangedSubview(placeholderImageView)
-		placeholderStack.addArrangedSubview(placeholderLabel)
 		view.addSubview(placeholderStack)
-	}
 
-	private func setupConstraints() {
 		let safe = view.safeAreaLayoutGuide
 
 		NSLayoutConstraint.activate([
-			titleLabel.topAnchor.constraint(equalTo: safe.topAnchor, constant: 44),
-			titleLabel.leadingAnchor.constraint(equalTo: safe.leadingAnchor, constant: 16),
-			titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: safe.trailingAnchor, constant: -16)
+			titleLabel.topAnchor.constraint(equalTo: safe.topAnchor, constant: UIConstants.titleTopInset),
+			titleLabel.leadingAnchor.constraint(equalTo: safe.leadingAnchor, constant: UIConstants.sideInset),
+			titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: safe.trailingAnchor, constant: -UIConstants.sideInset)
 		])
 
 		NSLayoutConstraint.activate([
-			statisticsScrollView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 77),
-			statisticsScrollView.leadingAnchor.constraint(equalTo: safe.leadingAnchor, constant: 16),
-			statisticsScrollView.trailingAnchor.constraint(equalTo: safe.trailingAnchor, constant: -16),
+			statisticsScrollView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: UIConstants.contentTopInset),
+			statisticsScrollView.leadingAnchor.constraint(equalTo: safe.leadingAnchor, constant: UIConstants.sideInset),
+			statisticsScrollView.trailingAnchor.constraint(equalTo: safe.trailingAnchor, constant: -UIConstants.sideInset),
 			statisticsScrollView.bottomAnchor.constraint(equalTo: safe.bottomAnchor)
 		])
 
@@ -137,8 +140,8 @@ final class StatisticsViewController: UIViewController {
 		])
 
 		NSLayoutConstraint.activate([
-			placeholderImageView.widthAnchor.constraint(equalToConstant: 80),
-			placeholderImageView.heightAnchor.constraint(equalToConstant: 80),
+			placeholderImageView.widthAnchor.constraint(equalToConstant: UIConstants.placeholderImageSize),
+			placeholderImageView.heightAnchor.constraint(equalToConstant: UIConstants.placeholderImageSize),
 			placeholderStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 			placeholderStack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
 		])
@@ -174,7 +177,7 @@ final class StatisticsViewController: UIViewController {
 			let cardView = StatisticsCardView()
 			cardView.configure(value: card.value, title: card.title)
 			statisticsStackView.addArrangedSubview(cardView)
-			cardView.heightAnchor.constraint(equalToConstant: 90).isActive = true
+			cardView.heightAnchor.constraint(equalToConstant: UIConstants.cardHeight).isActive = true
 		}
 	}
 }
