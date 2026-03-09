@@ -291,16 +291,19 @@ final class TrackersViewController: UIViewController {
 			self?.viewModel.didSelectFilterOption(option)
 		}
 
-		filtersViewController.modalPresentationStyle = .pageSheet
-		if let sheet = filtersViewController.sheetPresentationController {
+		preparePageSheet(for: filtersViewController)
+		present(filtersViewController, animated: true)
+	}
+
+	private func preparePageSheet(for viewController: UIViewController) {
+		viewController.modalPresentationStyle = .pageSheet
+		if let sheet = viewController.sheetPresentationController {
 			sheet.detents = [.large()]
 			sheet.prefersGrabberVisible = false
 			if #available(iOS 16.0, *) {
 				sheet.prefersScrollingExpandsWhenScrolledToEdge = false
 			}
 		}
-
-		present(filtersViewController, animated: true)
 	}
 
 	private func updateCollectionInsets() {
@@ -320,15 +323,7 @@ final class TrackersViewController: UIViewController {
 		let typeViewController = TrackerTypeSelectionViewController(viewModel: typeViewModel)
 		let nav = UINavigationController(rootViewController: typeViewController)
 
-		nav.modalPresentationStyle = .pageSheet
-		if let sheet = nav.sheetPresentationController {
-			sheet.detents = [.large()]
-			sheet.prefersGrabberVisible = false
-			if #available(iOS 16.0, *) {
-				sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-			}
-		}
-
+		preparePageSheet(for: nav)
 		present(nav, animated: true)
 	}
 
@@ -351,14 +346,7 @@ final class TrackersViewController: UIViewController {
 		}
 
 		let nav = UINavigationController(rootViewController: viewController)
-		nav.modalPresentationStyle = .pageSheet
-		if let sheet = nav.sheetPresentationController {
-			sheet.detents = [.large()]
-			sheet.prefersGrabberVisible = false
-			if #available(iOS 16.0, *) {
-				sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-			}
-		}
+		preparePageSheet(for: nav)
 
 		present(nav, animated: true)
 	}

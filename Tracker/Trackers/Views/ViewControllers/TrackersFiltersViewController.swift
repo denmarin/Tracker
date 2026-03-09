@@ -7,17 +7,11 @@
 
 import UIKit
 
-private struct TrackersFilterRowViewData {
-	let option: TrackersFilterOption
-	let isSelected: Bool
-	let isFirst: Bool
-	let isLast: Bool
-}
-
 final class TrackersFiltersViewController: UIViewController {
 	var onSelectFilterOption: ((TrackersFilterOption) -> Void)?
 
-	private let rows: [TrackersFilterRowViewData]
+	private let options = TrackersFilterOption.allCases
+	private let selectedFilter: TrackersFilter?
 
 	private let titleLabel: UILabel = {
 		let label = UILabel()
@@ -40,14 +34,7 @@ final class TrackersFiltersViewController: UIViewController {
 	}()
 
 	init(selectedFilter: TrackersFilter?) {
-		self.rows = TrackersFilterOption.allCases.enumerated().map { index, option in
-			TrackersFilterRowViewData(
-				option: option,
-				isSelected: option.showsCheckmark(selectedFilter: selectedFilter),
-				isFirst: index == 0,
-				isLast: index == TrackersFilterOption.allCases.count - 1
-			)
-		}
+		self.selectedFilter = selectedFilter
 		super.init(nibName: nil, bundle: nil)
 	}
 
@@ -91,7 +78,7 @@ final class TrackersFiltersViewController: UIViewController {
 			tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 24),
 			tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
 			tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-			tableView.heightAnchor.constraint(equalToConstant: CGFloat(rows.count) * tableView.rowHeight),
+			tableView.heightAnchor.constraint(equalToConstant: CGFloat(options.count) * tableView.rowHeight),
 			tableView.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor)
 		])
 	}
@@ -99,7 +86,7 @@ final class TrackersFiltersViewController: UIViewController {
 
 extension TrackersFiltersViewController: UITableViewDataSource {
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		rows.count
+		options.count
 	}
 
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -111,7 +98,13 @@ extension TrackersFiltersViewController: UITableViewDataSource {
 		else {
 			return UITableViewCell()
 		}
-		cell.configure(with: rows[indexPath.row])
+		let option = options[indexPath.row]
+		cell.configure(
+			option: option,
+			isSelected: option.showsCheckmark(selectedFilter: selectedFilter),
+			isFirst: indexPath.row == 0,
+			isLast: indexPath.row == options.count - 1
+		)
 		return cell
 	}
 }
@@ -120,7 +113,7 @@ extension TrackersFiltersViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		tableView.deselectRow(at: indexPath, animated: true)
 		AppAnalytics.shared.click(.filters, item: .filterOption)
-		let option = rows[indexPath.row].option
+		let option = options[indexPath.row]
 		onSelectFilterOption?(option)
 		dismiss(animated: true)
 	}
@@ -179,11 +172,11 @@ private final class TrackersFilterOptionCell: UITableViewCell {
 		containerView.layer.maskedCorners = []
 	}
 
-	func configure(with viewData: TrackersFilterRowViewData) {
-		titleLabel.text = viewData.option.title
-		checkmarkView.isHidden = !viewData.isSelected
-		separatorView.isHidden = viewData.isLast
-		applyCorners(isFirst: viewData.isFirst, isLast: viewData.isLast)
+	func configure(option: TrackersFilterOption, isSelected: Bool, isFirst: Bool, isLast: Bool) {
+		titleLabel.text = option.title
+		checkmarkView.isHidden = !isSelected
+		separatorView.isHidden = isLast
+		applyCorners(isFirst: isFirst, isLast: isLast)
 	}
 
 	private func setupViews() {
