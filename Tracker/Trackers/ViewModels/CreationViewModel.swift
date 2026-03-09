@@ -41,9 +41,11 @@ enum TrackerCreationMode {
 }
 
 final class CreationViewModel {
-	private enum SubmissionMode {
-		case create
-		case edit(originalTrackerID: UUID, createdAt: Date, isPinned: Bool)
+	private struct EditContext {
+		let trackerID: UUID
+		let createdAt: Date
+		let isPinned: Bool
+		let completedCount: Int
 	}
 
 	struct State {
@@ -78,18 +80,17 @@ final class CreationViewModel {
 	let colorAssetNames: [String] = (1...18).map { "ColorSelect\($0)" }
 
 	private let trackerCategoryStore: TrackerCategoryStore
-	private let maxTitleLength = 38
-	private let submissionMode: SubmissionMode
-	private let initialCompletedCount: Int
-	private let stateSubject: CurrentValueSubject<State, Never>
+	private static let maxTitleLength = 38
+	private let editContext: EditContext?
+	private lazy var stateSubject = CurrentValueSubject<State, Never>(makeState())
 	private let dismissSubject = PassthroughSubject<Void, Never>()
 	private let createTrackerSubject = PassthroughSubject<(Tracker, String), Never>()
 
-	private var title = ""
+	private var title: String
 	private var selectedCategoryTitle: String?
 	private var selectedEmoji: String?
 	private var selectedColorIndex: Int?
-	private var selectedSchedule: Set<Weekday> = []
+	private var selectedSchedule: Set<Weekday>
 
 	init(
 		mode: TrackerCreationMode,
@@ -100,46 +101,41 @@ final class CreationViewModel {
 	) {
 		self.mode = mode
 		self.trackerCategoryStore = trackerCategoryStore
-		self.initialCompletedCount = initialCompletedCount
+
+		let initialEditContext: EditContext?
+		let resolvedTitle: String
+		let resolvedCategoryTitle: String?
+		let resolvedEmoji: String?
+		let resolvedColorIndex: Int?
+		let resolvedSchedule: Set<Weekday>
+
 		if let initialTracker {
-			self.submissionMode = .edit(
-				originalTrackerID: initialTracker.id,
+			initialEditContext = EditContext(
+				trackerID: initialTracker.id,
 				createdAt: initialTracker.createdAt,
-				isPinned: initialTracker.isPinned
+				isPinned: initialTracker.isPinned,
+				completedCount: initialCompletedCount
 			)
-			self.title = initialTracker.title
-			self.selectedCategoryTitle = initialCategoryTitle
-			self.selectedEmoji = initialTracker.emoji
-			self.selectedColorIndex = Self.colorIndex(for: initialTracker.color, in: colorAssetNames)
-			self.selectedSchedule = mode.requiresSchedule ? initialTracker.schedule : []
+			resolvedTitle = initialTracker.title
+			resolvedCategoryTitle = initialCategoryTitle
+			resolvedEmoji = initialTracker.emoji
+			resolvedColorIndex = Self.colorIndex(for: initialTracker.color, in: colorAssetNames)
+			resolvedSchedule = mode.requiresSchedule ? initialTracker.schedule : []
 		} else {
-			self.submissionMode = .create
-			self.title = ""
-			self.selectedCategoryTitle = nil
-			self.selectedEmoji = nil
-			self.selectedColorIndex = nil
-			self.selectedSchedule = []
+			initialEditContext = nil
+			resolvedTitle = ""
+			resolvedCategoryTitle = nil
+			resolvedEmoji = nil
+			resolvedColorIndex = nil
+			resolvedSchedule = []
 		}
-		self.stateSubject = CurrentValueSubject(
-			State(
-				screenTitle: initialTracker == nil ? mode.screenTitle : mode.editScreenTitle,
-				submitButtonTitle: initialTracker == nil
-					? String(localized: "common.create")
-					: String(localized: "common.save"),
-				completedDaysText: Self.makeCompletedDaysText(
-					isEditing: initialTracker != nil,
-					mode: mode,
-					completedCount: initialCompletedCount
-				),
-				title: title,
-				selectedCategoryTitle: selectedCategoryTitle,
-				selectedEmoji: selectedEmoji,
-				selectedColorIndex: selectedColorIndex,
-				scheduleSummary: mode.requiresSchedule ? Self.scheduleSummary(from: selectedSchedule) : nil,
-				isTitleTooLong: title.count > 38,
-				isCreateEnabled: false
-			)
-		)
+
+		self.editContext = initialEditContext
+		self.title = resolvedTitle
+		self.selectedCategoryTitle = resolvedCategoryTitle
+		self.selectedEmoji = resolvedEmoji
+		self.selectedColorIndex = resolvedColorIndex
+		self.selectedSchedule = resolvedSchedule
 	}
 
 	func viewDidLoad() {
@@ -196,39 +192,12 @@ final class CreationViewModel {
 	}
 
 	private func emitState() {
-		let isEditing: Bool
-		switch submissionMode {
-		case .create:
-			isEditing = false
-		case .edit:
-			isEditing = true
-		}
-
-		stateSubject.send(
-			State(
-				screenTitle: isEditing ? mode.editScreenTitle : mode.screenTitle,
-				submitButtonTitle: isEditing
-					? String(localized: "common.save")
-					: String(localized: "common.create"),
-				completedDaysText: Self.makeCompletedDaysText(
-					isEditing: isEditing,
-					mode: mode,
-					completedCount: initialCompletedCount
-				),
-				title: title,
-				selectedCategoryTitle: selectedCategoryTitle,
-				selectedEmoji: selectedEmoji,
-				selectedColorIndex: selectedColorIndex,
-				scheduleSummary: mode.requiresSchedule ? scheduleSummary(from: selectedSchedule) : nil,
-				isTitleTooLong: title.count > maxTitleLength,
-				isCreateEnabled: canCreateTracker()
-			)
-		)
+		stateSubject.send(makeState())
 	}
 
 	private func canCreateTracker() -> Bool {
 		guard
-			title.count <= maxTitleLength,
+			title.count <= Self.maxTitleLength,
 			!normalizedTitle.isEmpty,
 			selectedCategoryTitle != nil,
 			selectedEmoji != nil,
@@ -251,23 +220,22 @@ final class CreationViewModel {
 		let color = UIColor(named: colorName) ?? .systemBlue
 
 		let tracker: Tracker
-		switch submissionMode {
-		case .create:
+		if let editContext {
+			tracker = Tracker(
+				id: editContext.trackerID,
+				title: normalizedTitle,
+				emoji: emoji,
+				color: color,
+				schedule: mode.requiresSchedule ? selectedSchedule : [],
+				createdAt: editContext.createdAt,
+				isPinned: editContext.isPinned
+			)
+		} else {
 			tracker = Tracker(
 				title: normalizedTitle,
 				emoji: emoji,
 				color: color,
 				schedule: mode.requiresSchedule ? selectedSchedule : []
-			)
-		case .edit(let originalTrackerID, let createdAt, let isPinned):
-			tracker = Tracker(
-				id: originalTrackerID,
-				title: normalizedTitle,
-				emoji: emoji,
-				color: color,
-				schedule: mode.requiresSchedule ? selectedSchedule : [],
-				createdAt: createdAt,
-				isPinned: isPinned
 			)
 		}
 		return (tracker, categoryTitle)
@@ -275,10 +243,6 @@ final class CreationViewModel {
 
 	private var normalizedTitle: String {
 		title.trimmingCharacters(in: .whitespacesAndNewlines)
-	}
-
-	private func scheduleSummary(from selection: Set<Weekday>) -> String {
-		Self.scheduleSummary(from: selection)
 	}
 
 	private static func scheduleSummary(from selection: Set<Weekday>) -> String {
@@ -297,34 +261,42 @@ final class CreationViewModel {
 		}
 	}
 
-	private static func makeCompletedDaysText(
-		isEditing: Bool,
-		mode: TrackerCreationMode,
-		completedCount: Int
-	) -> String? {
-		guard isEditing, mode == .habit else { return nil }
-		let dayWord = localizedDayWord(for: completedCount)
-		let completedCountText = String(completedCount)
-		let format = String(localized: "tracker.edit.completedDays.format")
-		return String(format: format, locale: Locale.current, completedCountText, dayWord)
+	private var isEditing: Bool {
+		editContext != nil
 	}
 
-	private static func localizedDayWord(for count: Int) -> String {
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
-		if languageCode == "ru" {
-			let mod10 = count % 10
-			let mod100 = count % 100
-			if mod10 == 1 && mod100 != 11 {
-				return String(localized: "tracker.dayWord.one")
-			}
-			if (2...4).contains(mod10) && !(12...14).contains(mod100) {
-				return String(localized: "tracker.dayWord.few")
-			}
-			return String(localized: "tracker.dayWord.many")
-		}
+	private var screenTitle: String {
+		isEditing ? mode.editScreenTitle : mode.screenTitle
+	}
 
-		return count == 1
-			? String(localized: "tracker.dayWord.one")
-			: String(localized: "tracker.dayWord.other")
+	private var submitButtonTitle: String {
+		isEditing ? String(localized: "common.save") : String(localized: "common.create")
+	}
+
+	private var completedDaysText: String? {
+		Self.makeCompletedDaysText(mode: mode, editContext: editContext)
+	}
+
+	private func makeState() -> State {
+		State(
+			screenTitle: screenTitle,
+			submitButtonTitle: submitButtonTitle,
+			completedDaysText: completedDaysText,
+			title: title,
+			selectedCategoryTitle: selectedCategoryTitle,
+			selectedEmoji: selectedEmoji,
+			selectedColorIndex: selectedColorIndex,
+			scheduleSummary: mode.requiresSchedule ? Self.scheduleSummary(from: selectedSchedule) : nil,
+			isTitleTooLong: title.count > Self.maxTitleLength,
+			isCreateEnabled: canCreateTracker()
+		)
+	}
+
+	private static func makeCompletedDaysText(
+		mode: TrackerCreationMode,
+		editContext: EditContext?
+	) -> String? {
+		guard mode == .habit, let completedCount = editContext?.completedCount else { return nil }
+		return TrackerDaysTextFormatter.makeDaysCountText(for: completedCount)
 	}
 }

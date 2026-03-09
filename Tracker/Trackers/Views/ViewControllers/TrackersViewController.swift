@@ -531,18 +531,19 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 		_ collectionView: UICollectionView,
 		previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
 	) -> UITargetedPreview? {
-		guard
-			let indexPath = configuration.identifier as? NSIndexPath,
-			let cell = collectionView.cellForItem(at: indexPath as IndexPath) as? TrackerCell
-		else {
-			return nil
-		}
-		return cell.makeContextMenuPreview(in: collectionView)
+		contextMenuPreview(for: configuration, in: collectionView)
 	}
 
 	func collectionView(
 		_ collectionView: UICollectionView,
 		previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
+	) -> UITargetedPreview? {
+		contextMenuPreview(for: configuration, in: collectionView)
+	}
+
+	private func contextMenuPreview(
+		for configuration: UIContextMenuConfiguration,
+		in collectionView: UICollectionView
 	) -> UITargetedPreview? {
 		guard
 			let indexPath = configuration.identifier as? NSIndexPath,

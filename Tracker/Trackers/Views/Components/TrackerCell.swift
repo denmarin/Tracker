@@ -155,7 +155,7 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
         pinImageView.isHidden = !tracker.isPinned
-        countLabel.text = "\(completedCount) \(localizedDayWord(for: completedCount))"
+        countLabel.text = TrackerDaysTextFormatter.makeDaysCountText(for: completedCount)
 
         let imageName = isCompleted ? "checkmark" : "plus"
         let symbolConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .bold)
@@ -164,25 +164,6 @@ final class TrackerCell: UICollectionViewCell {
         toggleButton.backgroundColor = isCompleted ? tracker.color.withAlphaComponent(0.3) : tracker.color
 
         contentView.alpha = 1
-    }
-
-    private func localizedDayWord(for count: Int) -> String {
-        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
-        if languageCode == "ru" {
-            let mod10 = count % 10
-            let mod100 = count % 100
-            if mod10 == 1 && mod100 != 11 {
-                return String(localized: "tracker.dayWord.one")
-            }
-            if (2...4).contains(mod10) && !(12...14).contains(mod100) {
-                return String(localized: "tracker.dayWord.few")
-            }
-            return String(localized: "tracker.dayWord.many")
-        }
-
-        return count == 1
-            ? String(localized: "tracker.dayWord.one")
-            : String(localized: "tracker.dayWord.other")
     }
 
     @available(*, unavailable)

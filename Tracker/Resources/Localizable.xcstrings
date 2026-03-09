@@ -1220,7 +1220,7 @@
         }
       }
     },
-    "tracker.edit.completedDays.format" : {
+    "tracker.days.count.format" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
