@@ -86,16 +86,16 @@ final class TrackerTypeSelectionViewController: UIViewController {
 	}
 
 	private func bindViewModel() {
-		viewModel.routeToCreationPublisher
+		viewModel.routeToEditorPublisher
 			.receive(on: RunLoop.main)
 			.sink { [weak self] creationViewModel in
 				guard let self else { return }
-				let viewController: CreationViewController
+				let viewController: TrackerEditorViewController
 				switch creationViewModel.mode {
 				case .habit:
-					viewController = HabitCreationViewController(viewModel: creationViewModel)
+					viewController = HabitTrackerEditorViewController(viewModel: creationViewModel)
 				case .irregularEvent:
-					viewController = IrregularEventCreationViewController(viewModel: creationViewModel)
+					viewController = IrregularEventTrackerEditorViewController(viewModel: creationViewModel)
 				}
 				self.navigationController?.pushViewController(viewController, animated: true)
 			}

@@ -208,10 +208,10 @@ final class TrackersViewModel {
 		}
 	}
 
-	func makeTrackerEditingViewModel(for trackerID: UUID) -> CreationViewModel? {
+	func makeTrackerEditingViewModel(for trackerID: UUID) -> TrackerEditorViewModel? {
 		guard let trackerContext = trackerContext(for: trackerID) else { return nil }
-		let mode: TrackerCreationMode = trackerContext.tracker.schedule.isEmpty ? .irregularEvent : .habit
-		return CreationViewModel(
+		let mode: TrackerEditorMode = trackerContext.tracker.schedule.isEmpty ? .irregularEvent : .habit
+		return TrackerEditorViewModel(
 			mode: mode,
 			trackerCategoryStore: trackerCategoryStore,
 			initialTracker: trackerContext.tracker,

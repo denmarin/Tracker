@@ -1,5 +1,5 @@
 //
-//  TrackersFiltersViewController.swift
+//  TrackersFilterViewController.swift
 //  Tracker
 //
 //  Created by Codex on 08.03.26.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class TrackersFiltersViewController: UIViewController {
+final class TrackersFilterViewController: UIViewController {
 	var onSelectFilterOption: ((TrackersFilterOption) -> Void)?
 
 	private let options = TrackersFilterOption.allCases
@@ -84,7 +84,7 @@ final class TrackersFiltersViewController: UIViewController {
 	}
 }
 
-extension TrackersFiltersViewController: UITableViewDataSource {
+extension TrackersFilterViewController: UITableViewDataSource {
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		options.count
 	}
@@ -109,7 +109,7 @@ extension TrackersFiltersViewController: UITableViewDataSource {
 	}
 }
 
-extension TrackersFiltersViewController: UITableViewDelegate {
+extension TrackersFilterViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		tableView.deselectRow(at: indexPath, animated: true)
 		AppAnalytics.shared.click(.filters, item: .filterOption)

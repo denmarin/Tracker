@@ -1,5 +1,5 @@
 //
-//  CategoryListViewModel.swift
+//  TrackerCategoryListViewModel.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 21.02.26.
@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-final class CategoryListViewModel {
+final class TrackerCategoryListViewModel {
 	var onRowsChanged: (([CategoryRowViewData]) -> Void)?
 	var onEmptyStateChanged: ((Bool) -> Void)?
 	var onRequestCategoryCreation: (() -> Void)?

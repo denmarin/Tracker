@@ -1,5 +1,5 @@
 //
-//  CategoryEditorViewModel.swift
+//  TrackerCategoryEditorViewModel.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 21.02.26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CategoryEditorViewModel {
+final class TrackerCategoryEditorViewModel {
 	struct State {
 		let screenTitle: String
 		let inputTitle: String

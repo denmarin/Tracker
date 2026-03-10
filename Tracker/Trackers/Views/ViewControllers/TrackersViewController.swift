@@ -286,7 +286,7 @@ final class TrackersViewController: UIViewController {
 
 	private func presentFilters() {
 		guard let state else { return }
-		let filtersViewController = TrackersFiltersViewController(selectedFilter: state.selectedFilter)
+		let filtersViewController = TrackersFilterViewController(selectedFilter: state.selectedFilter)
 		filtersViewController.onSelectFilterOption = { [weak self] option in
 			self?.viewModel.didSelectFilterOption(option)
 		}
@@ -330,19 +330,19 @@ final class TrackersViewController: UIViewController {
 	private func presentTrackerEditing(for trackerID: UUID) {
 		guard let creationViewModel = viewModel.makeTrackerEditingViewModel(for: trackerID) else { return }
 
-		creationViewModel.createTrackerPublisher
+		creationViewModel.saveTrackerPublisher
 			.receive(on: RunLoop.main)
 			.sink { [weak self] tracker, categoryTitle in
 				self?.viewModel.updateTracker(tracker, toCategoryWithTitle: categoryTitle)
 			}
 			.store(in: &cancellables)
 
-		let viewController: CreationViewController
+		let viewController: TrackerEditorViewController
 		switch creationViewModel.mode {
 		case .habit:
-			viewController = HabitCreationViewController(viewModel: creationViewModel)
+			viewController = HabitTrackerEditorViewController(viewModel: creationViewModel)
 		case .irregularEvent:
-			viewController = IrregularEventCreationViewController(viewModel: creationViewModel)
+			viewController = IrregularEventTrackerEditorViewController(viewModel: creationViewModel)
 		}
 
 		let nav = UINavigationController(rootViewController: viewController)

@@ -1,5 +1,5 @@
 //
-//  CreationViewModel.swift
+//  TrackerEditorViewModel.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 21.02.26.
@@ -8,7 +8,7 @@
 import UIKit
 import Combine
 
-enum TrackerCreationMode {
+enum TrackerEditorMode {
 	case habit
 	case irregularEvent
 
@@ -40,7 +40,7 @@ enum TrackerCreationMode {
 	}
 }
 
-final class CreationViewModel {
+final class TrackerEditorViewModel {
 	private struct EditContext {
 		let trackerID: UUID
 		let createdAt: Date
@@ -58,7 +58,7 @@ final class CreationViewModel {
 		let selectedColorIndex: Int?
 		let scheduleSummary: String?
 		let isTitleTooLong: Bool
-		let isCreateEnabled: Bool
+		let isSubmitEnabled: Bool
 	}
 
 	var statePublisher: AnyPublisher<State, Never> {
@@ -67,11 +67,11 @@ final class CreationViewModel {
 	var dismissPublisher: AnyPublisher<Void, Never> {
 		dismissSubject.eraseToAnyPublisher()
 	}
-	var createTrackerPublisher: AnyPublisher<(Tracker, String), Never> {
-		createTrackerSubject.eraseToAnyPublisher()
+	var saveTrackerPublisher: AnyPublisher<(Tracker, String), Never> {
+		saveTrackerSubject.eraseToAnyPublisher()
 	}
 
-	let mode: TrackerCreationMode
+	let mode: TrackerEditorMode
 	let emojis: [String] = [
 		"🙂", "😻", "🌺", "🐶", "❤️", "😱",
 		"😇", "😡", "🥶", "🤔", "🙌", "🍔",
@@ -84,7 +84,7 @@ final class CreationViewModel {
 	private let editContext: EditContext?
 	private lazy var stateSubject = CurrentValueSubject<State, Never>(makeState())
 	private let dismissSubject = PassthroughSubject<Void, Never>()
-	private let createTrackerSubject = PassthroughSubject<(Tracker, String), Never>()
+	private let saveTrackerSubject = PassthroughSubject<(Tracker, String), Never>()
 
 	private var title: String
 	private var selectedCategoryTitle: String?
@@ -93,7 +93,7 @@ final class CreationViewModel {
 	private var selectedSchedule: Set<Weekday>
 
 	init(
-		mode: TrackerCreationMode,
+		mode: TrackerEditorMode,
 		trackerCategoryStore: TrackerCategoryStore,
 		initialTracker: Tracker? = nil,
 		initialCategoryTitle: String? = nil,
@@ -146,9 +146,9 @@ final class CreationViewModel {
 		dismissSubject.send(())
 	}
 
-	func didTapCreate() {
-		guard let payload = makeCreationPayload() else { return }
-		createTrackerSubject.send((payload.tracker, payload.categoryTitle))
+	func didTapSubmit() {
+		guard let payload = makeSubmissionPayload() else { return }
+		saveTrackerSubject.send((payload.tracker, payload.categoryTitle))
 		dismissSubject.send(())
 	}
 
@@ -184,8 +184,8 @@ final class CreationViewModel {
 		selectedSchedule
 	}
 
-	func makeCategoryListViewModel() -> CategoryListViewModel {
-		CategoryListViewModel(
+	func makeTrackerCategoryListViewModel() -> TrackerCategoryListViewModel {
+		TrackerCategoryListViewModel(
 			categoryStore: trackerCategoryStore,
 			initiallySelectedCategoryTitle: selectedCategoryTitle
 		)
@@ -195,7 +195,7 @@ final class CreationViewModel {
 		stateSubject.send(makeState())
 	}
 
-	private func canCreateTracker() -> Bool {
+	private func canSubmitTracker() -> Bool {
 		guard
 			title.count <= Self.maxTitleLength,
 			!normalizedTitle.isEmpty,
@@ -210,8 +210,8 @@ final class CreationViewModel {
 		return true
 	}
 
-	private func makeCreationPayload() -> (tracker: Tracker, categoryTitle: String)? {
-		guard canCreateTracker() else { return nil }
+	private func makeSubmissionPayload() -> (tracker: Tracker, categoryTitle: String)? {
+		guard canSubmitTracker() else { return nil }
 		guard let emoji = selectedEmoji else { return nil }
 		guard let selectedColorIndex else { return nil }
 		guard let categoryTitle = selectedCategoryTitle else { return nil }
@@ -288,12 +288,12 @@ final class CreationViewModel {
 			selectedColorIndex: selectedColorIndex,
 			scheduleSummary: mode.requiresSchedule ? Self.scheduleSummary(from: selectedSchedule) : nil,
 			isTitleTooLong: title.count > Self.maxTitleLength,
-			isCreateEnabled: canCreateTracker()
+			isSubmitEnabled: canSubmitTracker()
 		)
 	}
 
 	private static func makeCompletedDaysText(
-		mode: TrackerCreationMode,
+		mode: TrackerEditorMode,
 		editContext: EditContext?
 	) -> String? {
 		guard mode == .habit, let completedCount = editContext?.completedCount else { return nil }

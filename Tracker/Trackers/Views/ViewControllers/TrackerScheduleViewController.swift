@@ -1,5 +1,5 @@
 //
-//  ScheduleSelectionViewController.swift
+//  TrackerScheduleViewController.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 21.02.26.
@@ -9,9 +9,9 @@
 import UIKit
 import Combine
 
-final class ScheduleSelectionViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-	private let viewModel: ScheduleSelectionViewModel
-	private var rows: [ScheduleDayRowViewData] = []
+final class TrackerScheduleViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+	private let viewModel: TrackerScheduleViewModel
+	private var rows: [TrackerScheduleDayRowViewData] = []
 	private var cancellables = Set<AnyCancellable>()
 
 	private let tableView: UITableView = {
@@ -50,7 +50,7 @@ final class ScheduleSelectionViewController: UIViewController, UITableViewDataSo
 		return b
 	}()
 
-	init(viewModel: ScheduleSelectionViewModel) {
+	init(viewModel: TrackerScheduleViewModel) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
 	}

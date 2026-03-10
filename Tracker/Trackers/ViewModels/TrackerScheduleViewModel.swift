@@ -1,5 +1,5 @@
 //
-//  ScheduleSelectionViewModel.swift
+//  TrackerScheduleViewModel.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 21.02.26.
@@ -8,13 +8,13 @@
 import Foundation
 import Combine
 
-struct ScheduleDayRowViewData {
+struct TrackerScheduleDayRowViewData {
 	let title: String
 	let isSelected: Bool
 }
 
-final class ScheduleSelectionViewModel {
-	var rowsPublisher: AnyPublisher<[ScheduleDayRowViewData], Never> {
+final class TrackerScheduleViewModel {
+	var rowsPublisher: AnyPublisher<[TrackerScheduleDayRowViewData], Never> {
 		rowsSubject.eraseToAnyPublisher()
 	}
 	var doneSelectionPublisher: AnyPublisher<Set<Weekday>, Never> {
@@ -23,7 +23,7 @@ final class ScheduleSelectionViewModel {
 
 	private let daysOrder: [Weekday] = Weekday.ordered
 	private var selection: Set<Weekday>
-	private let rowsSubject = CurrentValueSubject<[ScheduleDayRowViewData], Never>([])
+	private let rowsSubject = CurrentValueSubject<[TrackerScheduleDayRowViewData], Never>([])
 	private let doneSelectionSubject = PassthroughSubject<Set<Weekday>, Never>()
 
 	init(initialSelection: Set<Weekday>) {
@@ -53,7 +53,7 @@ final class ScheduleSelectionViewModel {
 
 	private func emitRows() {
 		let rows = daysOrder.map { day in
-			ScheduleDayRowViewData(
+			TrackerScheduleDayRowViewData(
 				title: day.fullName,
 				isSelected: selection.contains(day)
 			)

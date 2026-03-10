@@ -1,5 +1,5 @@
 //
-//  CreationViewController.swift
+//  TrackerEditorViewController.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 25.01.26.
@@ -9,9 +9,9 @@
 import UIKit
 import Combine
 
-class CreationViewController: UIViewController {
-	private let viewModel: CreationViewModel
-	private var state: CreationViewModel.State?
+class TrackerEditorViewController: UIViewController {
+	private let viewModel: TrackerEditorViewModel
+	private var state: TrackerEditorViewModel.State?
 	private var cancellables = Set<AnyCancellable>()
 	private var scheduleSelectionCancellable: AnyCancellable?
 
@@ -173,7 +173,7 @@ class CreationViewController: UIViewController {
 		return cv
 	}()
 
-	init(viewModel: CreationViewModel) {
+	init(viewModel: TrackerEditorViewModel) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
 	}
@@ -317,7 +317,7 @@ class CreationViewController: UIViewController {
 		createButton.addAction(UIAction { [weak self] _ in
 			guard let self else { return }
 			AppAnalytics.shared.click(self.analyticsScreen, item: .create)
-			self.viewModel.didTapCreate()
+			self.viewModel.didTapSubmit()
 		}, for: .touchUpInside)
 
 		titleField.addAction(UIAction { [weak self] _ in
@@ -341,7 +341,7 @@ class CreationViewController: UIViewController {
 			.store(in: &cancellables)
 	}
 
-	private func applyState(_ state: CreationViewModel.State) {
+	private func applyState(_ state: TrackerEditorViewModel.State) {
 		self.state = state
 		headerLabel.text = state.screenTitle
 		createButton.configuration?.title = state.submitButtonTitle
@@ -356,8 +356,8 @@ class CreationViewController: UIViewController {
 		categoryRow.setValueText(state.selectedCategoryTitle)
 		scheduleRow.setValueText(state.scheduleSummary)
 
-		createButton.isEnabled = state.isCreateEnabled
-		applyCreateButtonStyle(isEnabled: state.isCreateEnabled)
+		createButton.isEnabled = state.isSubmitEnabled
+		applyCreateButtonStyle(isEnabled: state.isSubmitEnabled)
 		emojiCollectionView.reloadData()
 		colorCollectionView.reloadData()
 	}
@@ -380,8 +380,8 @@ class CreationViewController: UIViewController {
 	}
 
 	private func didTapCategory() {
-		let categoryListViewModel = viewModel.makeCategoryListViewModel()
-		let categoryListViewController = CategoryListViewController(viewModel: categoryListViewModel)
+		let categoryListViewModel = viewModel.makeTrackerCategoryListViewModel()
+		let categoryListViewController = TrackerCategoryListViewController(viewModel: categoryListViewModel)
 		categoryListViewController.onSelectedCategoryChanged = { [weak self] title in
 			self?.viewModel.updateSelectedCategory(title: title)
 		}
@@ -391,7 +391,7 @@ class CreationViewController: UIViewController {
 	private func didTapSchedule() {
 		guard viewModel.mode.requiresSchedule else { return }
 
-		let scheduleViewModel = ScheduleSelectionViewModel(
+		let scheduleViewModel = TrackerScheduleViewModel(
 			initialSelection: viewModel.currentScheduleSelection()
 		)
 		scheduleSelectionCancellable = scheduleViewModel.doneSelectionPublisher
@@ -402,7 +402,7 @@ class CreationViewController: UIViewController {
 				self?.scheduleSelectionCancellable = nil
 			}
 
-		let scheduleViewController = ScheduleSelectionViewController(viewModel: scheduleViewModel)
+		let scheduleViewController = TrackerScheduleViewController(viewModel: scheduleViewModel)
 		navigationController?.pushViewController(scheduleViewController, animated: true)
 	}
 
@@ -420,14 +420,14 @@ class CreationViewController: UIViewController {
 	}
 }
 
-extension CreationViewController: UITextFieldDelegate {
+extension TrackerEditorViewController: UITextFieldDelegate {
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 		textField.resignFirstResponder()
 		return true
 	}
 }
 
-extension CreationViewController: UICollectionViewDataSource {
+extension TrackerEditorViewController: UICollectionViewDataSource {
 	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 		if collectionView === emojiCollectionView { return viewModel.emojis.count }
 		return viewModel.colorAssetNames.count
@@ -468,7 +468,7 @@ extension CreationViewController: UICollectionViewDataSource {
 	}
 }
 
-extension CreationViewController: UICollectionViewDelegate {
+extension TrackerEditorViewController: UICollectionViewDelegate {
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 		if collectionView === emojiCollectionView {
 			AppAnalytics.shared.click(analyticsScreen, item: .emoji)

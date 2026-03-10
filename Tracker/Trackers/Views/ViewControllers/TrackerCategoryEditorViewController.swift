@@ -1,5 +1,5 @@
 //
-//  CategoryEditorViewController.swift
+//  TrackerCategoryEditorViewController.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 21.02.26.
@@ -8,14 +8,14 @@
 
 import UIKit
 
-final class CategoryEditorViewController: UIViewController {
+final class TrackerCategoryEditorViewController: UIViewController {
 	var onDone: ((String) -> Bool)? {
 		get { viewModel.onDone }
 		set { viewModel.onDone = newValue }
 	}
 
-	private let viewModel: CategoryEditorViewModel
-	private var state: CategoryEditorViewModel.State?
+	private let viewModel: TrackerCategoryEditorViewModel
+	private var state: TrackerCategoryEditorViewModel.State?
 
 	private let titleLabel: UILabel = {
 		let label = UILabel()
@@ -53,14 +53,14 @@ final class CategoryEditorViewController: UIViewController {
 	}()
 
 	init(screenTitle: String, initialTitle: String?) {
-		self.viewModel = CategoryEditorViewModel(
+		self.viewModel = TrackerCategoryEditorViewModel(
 			screenTitle: screenTitle,
 			initialTitle: initialTitle
 		)
 		super.init(nibName: nil, bundle: nil)
 	}
 
-	init(viewModel: CategoryEditorViewModel) {
+	init(viewModel: TrackerCategoryEditorViewModel) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
 	}
@@ -144,7 +144,7 @@ final class CategoryEditorViewController: UIViewController {
 		}
 	}
 
-	private func applyState(_ state: CategoryEditorViewModel.State) {
+	private func applyState(_ state: TrackerCategoryEditorViewModel.State) {
 		self.state = state
 		titleLabel.text = state.screenTitle
 		if titleTextField.text != state.inputTitle {
@@ -171,7 +171,7 @@ final class CategoryEditorViewController: UIViewController {
 	}
 }
 
-extension CategoryEditorViewController: UITextFieldDelegate {
+extension TrackerCategoryEditorViewController: UITextFieldDelegate {
 	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 		viewModel.didTapReturn()
 		if state?.isDoneEnabled != true {

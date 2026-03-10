@@ -1,5 +1,5 @@
 //
-//  CategoryListViewController.swift
+//  TrackerCategoryListViewController.swift
 //  Tracker
 //
 //  Created by Yury Semenyushkin on 21.02.26.
@@ -8,10 +8,10 @@
 
 import UIKit
 
-final class CategoryListViewController: UIViewController {
+final class TrackerCategoryListViewController: UIViewController {
 	var onSelectedCategoryChanged: ((String?) -> Void)?
 
-	private let viewModel: CategoryListViewModel
+	private let viewModel: TrackerCategoryListViewModel
 	private var rows: [CategoryRowViewData] = []
 
 	private let titleLabel: UILabel = {
@@ -75,7 +75,7 @@ final class CategoryListViewController: UIViewController {
 		return button
 	}()
 
-	init(viewModel: CategoryListViewModel) {
+	init(viewModel: TrackerCategoryListViewModel) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
 	}
@@ -198,7 +198,7 @@ final class CategoryListViewController: UIViewController {
 	}
 
 	private func presentCategoryCreation() {
-		let editor = CategoryEditorViewController(
+		let editor = TrackerCategoryEditorViewController(
 			screenTitle: String(localized: "category.editor.new"),
 			initialTitle: nil
 		)
@@ -214,7 +214,7 @@ final class CategoryListViewController: UIViewController {
 	}
 
 	private func presentCategoryEditing(category: TrackerCategoryItem) {
-		let editor = CategoryEditorViewController(
+		let editor = TrackerCategoryEditorViewController(
 			screenTitle: String(localized: "category.editor.edit"),
 			initialTitle: category.title
 		)
@@ -265,7 +265,7 @@ final class CategoryListViewController: UIViewController {
 	}
 }
 
-extension CategoryListViewController: UITableViewDataSource {
+extension TrackerCategoryListViewController: UITableViewDataSource {
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		rows.count
 	}
@@ -286,7 +286,7 @@ extension CategoryListViewController: UITableViewDataSource {
 	}
 }
 
-extension CategoryListViewController: UITableViewDelegate {
+extension TrackerCategoryListViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		tableView.deselectRow(at: indexPath, animated: true)
 		AppAnalytics.shared.click(.categoryList, item: .categorySelection)

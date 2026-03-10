@@ -9,13 +9,13 @@ import Foundation
 import Combine
 
 final class TrackerTypeSelectionViewModel {
-	var routeToCreationPublisher: AnyPublisher<CreationViewModel, Never> {
-		routeToCreationSubject.eraseToAnyPublisher()
+	var routeToEditorPublisher: AnyPublisher<TrackerEditorViewModel, Never> {
+		routeToEditorSubject.eraseToAnyPublisher()
 	}
 
 	private let trackerCategoryStore: TrackerCategoryStore
 	private let onCreate: (Tracker, String) -> Void
-	private let routeToCreationSubject = PassthroughSubject<CreationViewModel, Never>()
+	private let routeToEditorSubject = PassthroughSubject<TrackerEditorViewModel, Never>()
 	private var cancellables = Set<AnyCancellable>()
 
 	init(
@@ -27,23 +27,23 @@ final class TrackerTypeSelectionViewModel {
 	}
 
 	func didSelectHabit() {
-		routeToCreation(mode: .habit)
+		routeToEditor(mode: .habit)
 	}
 
 	func didSelectIrregularEvent() {
-		routeToCreation(mode: .irregularEvent)
+		routeToEditor(mode: .irregularEvent)
 	}
 
-	private func routeToCreation(mode: TrackerCreationMode) {
-		let creationViewModel = CreationViewModel(
+	private func routeToEditor(mode: TrackerEditorMode) {
+		let creationViewModel = TrackerEditorViewModel(
 			mode: mode,
 			trackerCategoryStore: trackerCategoryStore
 		)
-		creationViewModel.createTrackerPublisher
+		creationViewModel.saveTrackerPublisher
 			.sink { [onCreate] tracker, category in
 				onCreate(tracker, category)
 			}
 			.store(in: &cancellables)
-		routeToCreationSubject.send(creationViewModel)
+		routeToEditorSubject.send(creationViewModel)
 	}
 }
