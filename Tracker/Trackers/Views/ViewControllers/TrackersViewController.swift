@@ -111,7 +111,7 @@ final class TrackersViewController: UIViewController {
 		var config = UIButton.Configuration.filled()
 		config.title = String(localized: "trackers.filter.button")
 		config.baseBackgroundColor = .ypBlue
-		config.baseForegroundColor = .ypWhite
+		config.baseForegroundColor = .ypFixedWhite
 		config.cornerStyle = .fixed
 		config.background.cornerRadius = 16
 		config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 20, bottom: 14, trailing: 20)

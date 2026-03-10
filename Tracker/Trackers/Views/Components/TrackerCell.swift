@@ -23,7 +23,7 @@ final class TrackerCell: UICollectionViewCell {
     private let emojiBadgeView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 12
-        view.backgroundColor = UIColor.ypWhite.withAlphaComponent(0.3)
+        view.backgroundColor = UIColor.ypFixedWhite.withAlphaComponent(0.3)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -39,7 +39,7 @@ final class TrackerCell: UICollectionViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .ypWhite
+        label.textColor = .ypFixedWhite
         label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -48,7 +48,7 @@ final class TrackerCell: UICollectionViewCell {
     private let pinImageView: UIImageView = {
         let config = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
         let imageView = UIImageView(image: UIImage(systemName: "pin.fill", withConfiguration: config))
-        imageView.tintColor = .ypWhite
+        imageView.tintColor = .ypFixedWhite
         imageView.isHidden = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView

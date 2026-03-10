@@ -35,8 +35,8 @@ final class OnboardingViewController: UIViewController {
 		let control = UIPageControl()
 		control.numberOfPages = 0
 		control.currentPage = 0
-		control.currentPageIndicatorTintColor = .ypBlack
-		control.pageIndicatorTintColor = .ypBlack.withAlphaComponent(0.3)
+		control.currentPageIndicatorTintColor = .ypFixedBlack
+		control.pageIndicatorTintColor = .ypFixedBlack.withAlphaComponent(0.3)
 		control.isUserInteractionEnabled = false
 		control.translatesAutoresizingMaskIntoConstraints = false
 		return control
@@ -46,8 +46,8 @@ final class OnboardingViewController: UIViewController {
 		let button = UIButton(type: .system)
 		var config = UIButton.Configuration.filled()
 		config.title = String(localized: "onboarding.actionButton")
-		config.baseBackgroundColor = .ypBlack
-		config.baseForegroundColor = .ypWhite
+		config.baseBackgroundColor = .ypFixedBlack
+		config.baseForegroundColor = .ypFixedWhite
 		config.background.cornerRadius = 16
 		config.contentInsets = NSDirectionalEdgeInsets(top: 18, leading: 16, bottom: 18, trailing: 16)
 		button.configuration = config
