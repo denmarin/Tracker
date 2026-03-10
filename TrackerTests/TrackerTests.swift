@@ -1,37 +1,83 @@
 //
-//  TrackerTests.swift
+//  TrackersViewControllerSnapshotTests.swift
 //  TrackerTests
 //
-//  Created by Yury Semenyushkin on 12.01.26.
+//  Created by Codex on 10.03.26.
 //
 
-
+import CoreData
+import SnapshotTesting
 import XCTest
 @testable import Tracker
 
-final class TrackerTests: XCTestCase {
+final class TrackersViewControllerSnapshotTests: XCTestCase {
+	override func setUp() {
+		super.setUp()
+		continueAfterFailure = false
+	}
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+	func testMainScreenSnapshot_inRussian() {
+		XCTAssertEqual(String(localized: "trackers.title"), "Трекеры")
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+		let viewController = makeSUT()
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
+		assertSnapshot(
+			of: viewController,
+			as: .wait(for: 0.1, on: .image(on: .iPhoneSe)),
+			named: "main_screen_ru_light",
+			record: isRecordingSnapshots
+		)
+	}
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
+	private var isRecordingSnapshots: Bool {
+		ProcessInfo.processInfo.environment["RECORD_SNAPSHOTS"] == "1"
+	}
 
+	private func makeSUT() -> UIViewController {
+		let coreDataStack = makeInMemoryCoreDataStack()
+		let categoryStore = TrackerCategoryStore(coreDataStack: coreDataStack)
+		let trackerStore = TrackerStore(coreDataStack: coreDataStack, categoryStore: categoryStore)
+		let trackerRecordStore = TrackerRecordStore(coreDataStack: coreDataStack)
+
+		var calendar = Calendar(identifier: .gregorian)
+		calendar.locale = Locale(identifier: "ru_RU")
+		calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
+
+		let viewModel = TrackersViewModel(
+			trackerStore: trackerStore,
+			trackerRecordStore: trackerRecordStore,
+			trackerCategoryStore: categoryStore,
+			initialDate: makeFixedDate(),
+			calendar: calendar
+		)
+
+		let trackersViewController = TrackersViewController(viewModel: viewModel)
+		trackersViewController.overrideUserInterfaceStyle = .light
+
+		let navigationController = UINavigationController(rootViewController: trackersViewController)
+		navigationController.overrideUserInterfaceStyle = .light
+		return navigationController
+	}
+
+	private func makeInMemoryCoreDataStack() -> CoreDataStack {
+		let coreDataStack = CoreDataStack()
+		let description = NSPersistentStoreDescription()
+		description.type = NSInMemoryStoreType
+		description.shouldAddStoreAsynchronously = false
+		coreDataStack.persistentContainer.persistentStoreDescriptions = [description]
+		coreDataStack.load()
+		return coreDataStack
+	}
+
+	private func makeFixedDate() -> Date {
+		var components = DateComponents()
+		components.year = 2026
+		components.month = 1
+		components.day = 12
+		components.hour = 12
+		components.minute = 0
+		components.second = 0
+		components.timeZone = TimeZone(secondsFromGMT: 0)
+		return Calendar(identifier: .gregorian).date(from: components) ?? Date(timeIntervalSince1970: 0)
+	}
 }
