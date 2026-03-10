@@ -9,7 +9,10 @@
 import UIKit
 import Combine
 
-class TrackerEditorViewController: UIViewController {
+final class TrackerEditorViewController: UIViewController {
+	var onRequestCategorySelection: ((TrackerCategoryListViewModel, @escaping (String?) -> Void) -> Void)?
+	var onRequestScheduleSelection: ((TrackerScheduleViewModel, @escaping (Set<Weekday>) -> Void) -> Void)?
+
 	private let viewModel: TrackerEditorViewModel
 	private var state: TrackerEditorViewModel.State?
 	private var cancellables = Set<AnyCancellable>()
@@ -381,10 +384,17 @@ class TrackerEditorViewController: UIViewController {
 
 	private func didTapCategory() {
 		let categoryListViewModel = viewModel.makeTrackerCategoryListViewModel()
-		let categoryListViewController = TrackerCategoryListViewController(viewModel: categoryListViewModel)
-		categoryListViewController.onSelectedCategoryChanged = { [weak self] title in
+		let onCategorySelected: (String?) -> Void = { [weak self] title in
 			self?.viewModel.updateSelectedCategory(title: title)
 		}
+
+		if let onRequestCategorySelection {
+			onRequestCategorySelection(categoryListViewModel, onCategorySelected)
+			return
+		}
+
+		let categoryListViewController = TrackerCategoryListViewController(viewModel: categoryListViewModel)
+		categoryListViewController.onSelectedCategoryChanged = onCategorySelected
 		navigationController?.pushViewController(categoryListViewController, animated: true)
 	}
 
@@ -394,11 +404,20 @@ class TrackerEditorViewController: UIViewController {
 		let scheduleViewModel = TrackerScheduleViewModel(
 			initialSelection: viewModel.currentScheduleSelection()
 		)
+		let onScheduleSelected: (Set<Weekday>) -> Void = { [weak self] selection in
+			self?.viewModel.updateSchedule(selection)
+		}
+
+		if let onRequestScheduleSelection {
+			onRequestScheduleSelection(scheduleViewModel, onScheduleSelected)
+			return
+		}
+
 		scheduleSelectionCancellable = scheduleViewModel.doneSelectionPublisher
 			.prefix(1)
 			.receive(on: RunLoop.main)
 			.sink { [weak self] selection in
-				self?.viewModel.updateSchedule(selection)
+				onScheduleSelected(selection)
 				self?.scheduleSelectionCancellable = nil
 			}
 

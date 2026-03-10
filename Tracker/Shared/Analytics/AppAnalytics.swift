@@ -2,7 +2,7 @@
 //  AppAnalytics.swift
 //  Tracker
 //
-//  Created by Codex on 09.03.26.
+//  Created by Yury Semenyushkin on 09.03.26.
 //
 
 import Foundation

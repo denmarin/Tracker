@@ -2,7 +2,7 @@
 //  StatisticsCardView.swift
 //  Tracker
 //
-//  Created by Codex on 08.03.26.
+//  Created by Yury Semenyushkin on 08.03.26.
 //
 
 import UIKit

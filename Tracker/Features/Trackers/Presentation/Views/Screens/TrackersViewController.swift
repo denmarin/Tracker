@@ -10,6 +10,9 @@ import UIKit
 import Combine
 
 final class TrackersViewController: UIViewController {
+	var onRequestTrackerTypeSelection: (() -> Void)?
+	var onRequestTrackerEditing: ((UUID) -> Void)?
+
 	private let viewModel: TrackersViewModel
 	private var state: TrackersViewModel.State?
 	private var sections: [TrackerCategorySectionViewData] = []
@@ -272,7 +275,7 @@ final class TrackersViewController: UIViewController {
 		viewModel.requestTrackerCreationPublisher
 			.receive(on: RunLoop.main)
 			.sink { [weak self] in
-				self?.presentTrackerTypeSelection()
+				self?.onRequestTrackerTypeSelection?()
 			}
 			.store(in: &cancellables)
 
@@ -314,41 +317,6 @@ final class TrackersViewController: UIViewController {
 		if trackersCollectionView.verticalScrollIndicatorInsets.bottom != bottomInset {
 			trackersCollectionView.verticalScrollIndicatorInsets.bottom = bottomInset
 		}
-	}
-
-	private func presentTrackerTypeSelection() {
-		let typeViewModel = viewModel.makeTrackerTypeSelectionViewModel { [weak self] tracker, categoryTitle in
-			self?.viewModel.addTracker(tracker, toCategoryWithTitle: categoryTitle)
-		}
-		let typeViewController = TrackerTypeSelectionViewController(viewModel: typeViewModel)
-		let nav = UINavigationController(rootViewController: typeViewController)
-
-		preparePageSheet(for: nav)
-		present(nav, animated: true)
-	}
-
-	private func presentTrackerEditing(for trackerID: UUID) {
-		guard let creationViewModel = viewModel.makeTrackerEditingViewModel(for: trackerID) else { return }
-
-		creationViewModel.saveTrackerPublisher
-			.receive(on: RunLoop.main)
-			.sink { [weak self] tracker, categoryTitle in
-				self?.viewModel.updateTracker(tracker, toCategoryWithTitle: categoryTitle)
-			}
-			.store(in: &cancellables)
-
-		let viewController: TrackerEditorViewController
-		switch creationViewModel.mode {
-		case .habit:
-			viewController = HabitTrackerEditorViewController(viewModel: creationViewModel)
-		case .irregularEvent:
-			viewController = IrregularEventTrackerEditorViewController(viewModel: creationViewModel)
-		}
-
-		let nav = UINavigationController(rootViewController: viewController)
-		preparePageSheet(for: nav)
-
-		present(nav, animated: true)
 	}
 
 	private func presentDeleteTrackerConfirmation(for trackerID: UUID) {
@@ -512,7 +480,7 @@ extension TrackersViewController: UICollectionViewDataSource, UICollectionViewDe
 
 			let editAction = UIAction(title: String(localized: "tracker.menu.edit")) { _ in
 				AppAnalytics.shared.click(.main, item: .edit)
-				self.presentTrackerEditing(for: item.tracker.id)
+				self.onRequestTrackerEditing?(item.tracker.id)
 			}
 
 			let deleteAction = UIAction(

@@ -10,6 +10,8 @@ import UIKit
 import Combine
 
 final class TrackerTypeSelectionViewController: UIViewController {
+	var onRequestOpenEditor: ((TrackerEditorViewModel) -> Void)?
+
 	private let viewModel: TrackerTypeSelectionViewModel
 	private var cancellables = Set<AnyCancellable>()
 
@@ -88,16 +90,14 @@ final class TrackerTypeSelectionViewController: UIViewController {
 	private func bindViewModel() {
 		viewModel.routeToEditorPublisher
 			.receive(on: RunLoop.main)
-			.sink { [weak self] creationViewModel in
+			.sink { [weak self] editorViewModel in
 				guard let self else { return }
-				let viewController: TrackerEditorViewController
-				switch creationViewModel.mode {
-				case .habit:
-					viewController = HabitTrackerEditorViewController(viewModel: creationViewModel)
-				case .irregularEvent:
-					viewController = IrregularEventTrackerEditorViewController(viewModel: creationViewModel)
+				if let onRequestOpenEditor {
+					onRequestOpenEditor(editorViewModel)
+					return
 				}
-				self.navigationController?.pushViewController(viewController, animated: true)
+				let viewController = TrackerEditorViewController(viewModel: editorViewModel)
+				navigationController?.pushViewController(viewController, animated: true)
 			}
 			.store(in: &cancellables)
 	}

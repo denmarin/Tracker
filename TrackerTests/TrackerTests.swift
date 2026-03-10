@@ -2,7 +2,7 @@
 //  TrackersViewControllerSnapshotTests.swift
 //  TrackerTests
 //
-//  Created by Codex on 10.03.26.
+//  Created by Yury Semenyushkin on 10.03.26.
 //
 
 import CoreData
