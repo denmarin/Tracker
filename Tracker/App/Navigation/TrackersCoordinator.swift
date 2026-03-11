@@ -7,6 +7,10 @@ import UIKit
 import Combine
 
 final class TrackersCoordinator {
+	private enum SFSymbol {
+		static let trackersTab = "record.circle.fill"
+	}
+
 	private let trackerStore: TrackerStore
 	private let trackerRecordStore: TrackerRecordStore
 	private let trackerCategoryStore: TrackerCategoryStore
@@ -50,8 +54,8 @@ final class TrackersCoordinator {
 		let navigationController = UINavigationController(rootViewController: trackersViewController)
 		navigationController.tabBarItem = UITabBarItem(
 			title: String(localized: "tab.trackers"),
-			image: UIImage(systemName: "record.circle.fill"),
-			selectedImage: UIImage(systemName: "record.circle.fill")
+			image: UIImage(systemName: SFSymbol.trackersTab),
+			selectedImage: UIImage(systemName: SFSymbol.trackersTab)
 		)
 		return navigationController
 	}

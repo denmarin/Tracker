@@ -60,7 +60,7 @@ final class AppAnalytics {
 	private init() {}
 
 	func activateIfNeeded() {
-		guard AppMetrica.isActivated == false else { return }
+		guard !AppMetrica.isActivated else { return }
 
 		guard
 			let apiKey,

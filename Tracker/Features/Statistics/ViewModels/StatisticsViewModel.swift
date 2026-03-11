@@ -56,10 +56,12 @@ final class StatisticsViewModel {
 	}
 
 	private func observeStoreUpdates() {
-		Publishers.Merge(
+		let updates = Publishers.Merge(
 			trackerStore.didUpdatePublisher,
 			trackerRecordStore.didUpdatePublisher
 		)
+
+		updates
 			.sink { [weak self] _ in
 				self?.emitState()
 			}

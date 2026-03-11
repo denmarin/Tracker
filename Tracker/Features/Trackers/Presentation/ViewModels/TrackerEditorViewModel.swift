@@ -14,10 +14,8 @@ enum TrackerEditorMode {
 
 	var screenTitle: String {
 		switch self {
-		case .habit:
-			return String(localized: "tracker.creation.habit.title")
-		case .irregularEvent:
-			return String(localized: "tracker.creation.irregular.title")
+		case .habit: String(localized: "tracker.creation.habit.title")
+		case .irregularEvent: String(localized: "tracker.creation.irregular.title")
 		}
 	}
 
@@ -204,10 +202,7 @@ final class TrackerEditorViewModel {
 			selectedColorIndex != nil
 		else { return false }
 
-		if mode.requiresSchedule {
-			return !selectedSchedule.isEmpty
-		}
-		return true
+		return mode.requiresSchedule ? !selectedSchedule.isEmpty : true
 	}
 
 	private func makeSubmissionPayload() -> (tracker: Tracker, categoryTitle: String)? {
